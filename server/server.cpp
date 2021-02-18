@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <stdlib.h>
+#include <unistd.h>
 #include <cstring>
 #include <string.h>
 #include <vector>
@@ -70,12 +71,16 @@ vector<string> get_directory::get_fileSet(){
 }
 
 int main(){
-	get_directory dir("/home/lovettxh/Secure_File_System/server");
+	char buff[100];
+	getcwd(buff, 100);
+
+	get_directory dir(buff);
 	dir.search_fileSet();
 	vector<string> t = dir.get_fileSet();
 	//cout<<"1"<<endl;
 	for(const auto a : t){
 		cout<<a<<endl;
 	}
+
 	return 0;
 }
