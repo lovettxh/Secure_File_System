@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
-
+#include "cmd_line.h"
 using namespace std;
 
 class get_directory{
@@ -45,7 +45,7 @@ void get_directory::search_fileSet(){
 		DIR *dp;
 		string fileName;
 		if((dp = opendir(input_dir.c_str())) == NULL){
-			cout<<"directory open error"<<endl;
+			cerr<<"directory open error"<<endl;
 		}
 		while((dir = readdir(dp)) != NULL){
 			if(strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0){
@@ -75,11 +75,20 @@ int main(){
 	getcwd(buff, 100);
 
 	get_directory dir(buff);
+	cmd_line c(buff);
 	dir.search_fileSet();
 	vector<string> t = dir.get_fileSet();
-	//cout<<"1"<<endl;
+	string temp;
 	for(const auto a : t){
 		cout<<a<<endl;
+	}
+	while(1){
+		
+		getline(cin, temp);
+		
+		//c.set_input(temp);
+		//c.cmd_process();
+
 	}
 
 	return 0;
