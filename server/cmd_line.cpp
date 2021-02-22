@@ -5,6 +5,7 @@
 #include <cstring>
 #include <vector>
 #include "cmd_line.h"
+#include "server.h"
 using namespace std;
 
 
@@ -40,17 +41,50 @@ void cmd_line::set_input(string a){
 }
 
 
-void cmd_line::cmd_process(){
-	this->cmd_set = this->split(this->cmd_input, " ");
-	FILE *pp = popen(this->cmd_input.c_str(), "r");
-	if(!pp){
-		cerr<<"pipe open error"<<endl;
-		return;
-	}
-	char out[1024];
-	while(fgets(out, sizeof(out), pp)!=NULL){
-		cout<<out<<endl;
-	}
-	pclose(pp);
+void cmd_line::cmd_process(get_directory* dir){
+	this->cmd_set = this->split(this->cmd_in, " ");
 
+	switch(this->cmd_set[0]){
+		case "ls":
+			dir->search_fileSet();
+			vector<string> temp = dir->get_fileSet();
+			for(const auto a:temp){
+				cout<<a<<"     ";
+			}
+			cout<<endl;
+			break;
+
+		case "cd":
+			dir->search_fileSet();
+			vector<string> temp = dir->get_fileSet();
+			if(!this->cmd_set[1].compare("~")){
+				dir->set_dir(dir->get_home_dir());
+				break;
+			}else if(!this->cmd_set[1].compare("..")){
+				if(!dir->get_dir().compare(dir->get_home_dir())){
+					break;
+				}
+				vector<string> dir_temp = this->split(dir->current_dir, "/");
+				dir_temp.pop_back();
+				string new_dir = "";
+				for(const auto a:dir_temp){
+					new_dir += ("/" + a);
+				}
+				dir->set_dir(new_dir);
+				break;
+			}
+
+			int s = 0;
+			for(const auto a:temp){
+				if(!this->cmd_set[1].compare(a)){
+					s = 1;
+					break;
+				}
+			}
+			if(s){
+				string new_dir = dir->get_dir() + this->cmd_set[1];
+				dir->set_dir(new_dir);
+			}
+			break;
+	}
 }

@@ -8,56 +8,60 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include "server.h"
 #include "cmd_line.h"
 using namespace std;
 
-class get_directory{
-public:
-	get_directory(string a);
-	void set_dir(string a);
-	vector<string> get_fileSet();
-	void search_fileSet();
-private:
-	string input_dir;
-	vector<string> file_set;
-};
 
 get_directory::get_directory(string a){
-	this->input_dir = a;
+	this->current_dir = a;
+	this->home_dir = a;
 }
 
 void get_directory::set_dir(string a){
-	this->input_dir = a;
+	this->current_dir = a;
+}
+
+string get_directory::get_dir(){
+	return this->current_dir;
+}
+
+void get_directory::set_home_dir(string a){
+	this->home_dir = a;
+}
+
+string get_directory::get_home_dir(){
+	return this->home_dir;
 }
 
 void get_directory::search_fileSet(){
 	struct stat statBuffer;
 	mode_t m;
-	if(input_dir.empty()){
+	if(current_dir.empty()){
 		cout<<"empty path"<<endl;
 		return;
 	}
-	lstat(input_dir.c_str(), &statBuffer);
+	lstat(current_dir.c_str(), &statBuffer);
 	m = statBuffer.st_mode;
 
 	if(S_ISDIR(m)){
 		struct dirent *dir;
 		DIR *dp;
 		string fileName;
-		if((dp = opendir(input_dir.c_str())) == NULL){
+		if((dp = opendir(current_dir.c_str())) == NULL){
 			cerr<<"directory open error"<<endl;
 		}
 		while((dir = readdir(dp)) != NULL){
 			if(strcmp(dir->d_name, ".") == 0 || strcmp(dir->d_name, "..") == 0){
 				continue;
 			}
-			fileName = input_dir + "/" + dir->d_name;
+			fileName = current_dir + "/" + dir->d_name;
 			lstat(fileName.c_str(), &statBuffer);
 			if(S_ISREG(statBuffer.st_mode)){
 				fileName = dir->d_name;
 				this->file_set.push_back(fileName);
 			}else if(S_ISDIR(statBuffer.st_mode)){
-				fileName = "./";
+				fileName = "/";
 				fileName += dir->d_name;
 				this->file_set.push_back(fileName);
 			}
@@ -73,23 +77,19 @@ vector<string> get_directory::get_fileSet(){
 int main(){
 	char buff[100];
 	getcwd(buff, 100);
-
+	cout << buff<<endl;
 	get_directory dir(buff);
-	cmd_line c(buff);
-	dir.search_fileSet();
-	vector<string> t = dir.get_fileSet();
+	cmd_line c("");
+
 	string temp;
-	for(const auto a : t){
-		cout<<a<<endl;
-	}
+
 	while(1){
 		
 		getline(cin, temp);
 		
-		//c.set_input(temp);
-		//c.cmd_process();
+		c.set_input(temp);
+		c.cmd_process(*dir);
 
 	}
-
 	return 0;
 }
