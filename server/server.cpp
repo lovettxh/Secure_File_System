@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include "server.h"
+
 #include "cmd_line.h"
 using namespace std;
 
@@ -35,6 +35,7 @@ string get_directory::get_home_dir(){
 }
 
 void get_directory::search_fileSet(){
+	this->file_set.clear();
 	struct stat statBuffer;
 	mode_t m;
 	if(current_dir.empty()){
@@ -77,18 +78,17 @@ vector<string> get_directory::get_fileSet(){
 int main(){
 	char buff[100];
 	getcwd(buff, 100);
-	cout << buff<<endl;
 	get_directory dir(buff);
 	cmd_line c("");
 
 	string temp;
 
 	while(1){
-		
+		cout<<dir.get_dir()<<"$ ";
 		getline(cin, temp);
 		
 		c.set_input(temp);
-		c.cmd_process(*dir);
+		c.cmd_process(&dir);
 
 	}
 	return 0;

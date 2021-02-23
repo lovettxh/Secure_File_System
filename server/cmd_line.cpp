@@ -4,11 +4,14 @@
 #include <string.h>
 #include <cstring>
 #include <vector>
+#include <unordered_map>
 #include "cmd_line.h"
-#include "server.h"
+
 using namespace std;
 
-
+constexpr unsigned int str2int(const char* str, int h = 0){
+	    return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h];
+}
 
 cmd_line::cmd_line(string a){
 	this->cmd_input = a;
@@ -41,22 +44,26 @@ void cmd_line::set_input(string a){
 }
 
 
-void cmd_line::cmd_process(get_directory* dir){
-	this->cmd_set = this->split(this->cmd_in, " ");
 
-	switch(this->cmd_set[0]){
-		case "ls":
-			dir->search_fileSet();
-			vector<string> temp = dir->get_fileSet();
+void cmd_line::cmd_process(get_directory* dir){
+
+	this->cmd_set = this->split(this->cmd_input, " ");
+
+	dir->search_fileSet();
+	vector<string> temp = dir->get_fileSet();
+
+	switch(str2int(this->cmd_set[0].c_str())){
+
+		case str2int("ls"):
+			
 			for(const auto a:temp){
 				cout<<a<<"     ";
 			}
 			cout<<endl;
 			break;
 
-		case "cd":
-			dir->search_fileSet();
-			vector<string> temp = dir->get_fileSet();
+		case str2int("cd"):
+
 			if(!this->cmd_set[1].compare("~")){
 				dir->set_dir(dir->get_home_dir());
 				break;
@@ -64,7 +71,7 @@ void cmd_line::cmd_process(get_directory* dir){
 				if(!dir->get_dir().compare(dir->get_home_dir())){
 					break;
 				}
-				vector<string> dir_temp = this->split(dir->current_dir, "/");
+				vector<string> dir_temp = this->split(dir->get_dir(), "/");
 				dir_temp.pop_back();
 				string new_dir = "";
 				for(const auto a:dir_temp){
@@ -81,10 +88,15 @@ void cmd_line::cmd_process(get_directory* dir){
 					break;
 				}
 			}
-			if(s){
-				string new_dir = dir->get_dir() + this->cmd_set[1];
-				dir->set_dir(new_dir);
+			if(!s){
+				cout<<"Directory not found."<<endl;
+				break;
+			}else if((this->cmd_set[1][0])!='/'){
+				cout<<"Target is not a directory."<<endl;
+				break;
 			}
+			string new_dir = dir->get_dir() + this->cmd_set[1];
+			dir->set_dir(new_dir);
 			break;
 	}
 }
