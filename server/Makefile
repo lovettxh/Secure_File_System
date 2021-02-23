@@ -10,7 +10,7 @@ $(EXE): $(OBJS)
 cmd_line.o: cmd_line.cpp cmd_line.h
 	g++ cmd_line.cpp -o cmd_line.o $(CFLAGS)
 
-server.o: cmd_line.cpp cmd_line.h server.cpp
+server.o: cmd_line.cpp cmd_line.h server.cpp server.h
 	g++ server.cpp -o server.o $(CFLAGS)
 
 

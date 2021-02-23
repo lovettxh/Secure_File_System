@@ -1,10 +1,15 @@
 #include <iostream>
+#include <fstream>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <cstring>
 #include <vector>
 #include <unordered_map>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
 #include "cmd_line.h"
 
 using namespace std;
@@ -54,16 +59,17 @@ void cmd_line::cmd_process(get_directory* dir){
 
 	switch(str2int(this->cmd_set[0].c_str())){
 
-		case str2int("ls"):
+		case str2int("ls"):{
 			
 			for(const auto a:temp){
 				cout<<a<<"     ";
 			}
 			cout<<endl;
 			break;
+		}
 
-		case str2int("cd"):
-
+		case str2int("cd"):{
+			string new_dir = "";
 			if(!this->cmd_set[1].compare("~")){
 				dir->set_dir(dir->get_home_dir());
 				break;
@@ -73,7 +79,7 @@ void cmd_line::cmd_process(get_directory* dir){
 				}
 				vector<string> dir_temp = this->split(dir->get_dir(), "/");
 				dir_temp.pop_back();
-				string new_dir = "";
+				
 				for(const auto a:dir_temp){
 					new_dir += ("/" + a);
 				}
@@ -95,8 +101,39 @@ void cmd_line::cmd_process(get_directory* dir){
 				cout<<"Target is not a directory."<<endl;
 				break;
 			}
-			string new_dir = dir->get_dir() + this->cmd_set[1];
+			new_dir = dir->get_dir() + this->cmd_set[1];
 			dir->set_dir(new_dir);
 			break;
+		}
+
+		case str2int("touch"):{
+			string file_dir;
+			if(isdigit(this->cmd_set[1][0]) || isalpha(this->cmd_set[1][0])){
+				file_dir = dir->get_dir() + "/" + this->cmd_set[1];
+				ofstream file {file_dir};
+			}else{
+				cout<<"Invalid file name."<<endl;
+			}
+			break;
+		}
+
+		case str2int("mkdir"):{
+			if((this->cmd_set[1][0])!='/'){
+				cout<<"Invalid Directory name."<<endl;
+				break;
+			}
+			string dir_path = dir->get_dir() + this->cmd_set[1];
+			
+			if(opendir(dir_path.c_str())==NULL){
+				if(mkdir(dir_path.c_str(), 0777)){
+					cout<<"Error: "<<strerror(errno)<<endl;
+				}else{
+					cout<<"Directory Created."<<endl;
+				}
+			}else{
+				cout<<"Directory already exist."<<endl;
+			}
+			break;
+		}
 	}
 }
