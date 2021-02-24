@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,13 +56,13 @@ void cmd_line::cmd_process(get_directory* dir){
 	this->cmd_set = this->split(this->cmd_input, " ");
 
 	dir->search_fileSet();
-	vector<string> temp = dir->get_fileSet();
+	vector<string> temp_fileSet = dir->get_fileSet();
 
 	switch(str2int(this->cmd_set[0].c_str())){
 
 		case str2int("ls"):{
 			
-			for(const auto a:temp){
+			for(const auto a:temp_fileSet){
 				cout<<a<<"     ";
 			}
 			cout<<endl;
@@ -88,17 +89,17 @@ void cmd_line::cmd_process(get_directory* dir){
 			}
 
 			int s = 0;
-			for(const auto a:temp){
+			for(const auto a:temp_fileSet){
 				if(!this->cmd_set[1].compare(a)){
 					s = 1;
 					break;
 				}
 			}
 			if(!s){
-				cout<<"Directory not found."<<endl;
+				cout<<"Directory not found"<<endl;
 				break;
 			}else if((this->cmd_set[1][0])!='/'){
-				cout<<"Target is not a directory."<<endl;
+				cout<<"Target is not a directory"<<endl;
 				break;
 			}
 			new_dir = dir->get_dir() + this->cmd_set[1];
@@ -112,14 +113,14 @@ void cmd_line::cmd_process(get_directory* dir){
 				file_dir = dir->get_dir() + "/" + this->cmd_set[1];
 				ofstream file {file_dir};
 			}else{
-				cout<<"Invalid file name."<<endl;
+				cout<<"Invalid file name"<<endl;
 			}
 			break;
 		}
 
 		case str2int("mkdir"):{
 			if((this->cmd_set[1][0])!='/'){
-				cout<<"Invalid Directory name."<<endl;
+				cout<<"Invalid Directory name"<<endl;
 				break;
 			}
 			string dir_path = dir->get_dir() + this->cmd_set[1];
@@ -128,12 +129,69 @@ void cmd_line::cmd_process(get_directory* dir){
 				if(mkdir(dir_path.c_str(), 0777)){
 					cout<<"Error: "<<strerror(errno)<<endl;
 				}else{
-					cout<<"Directory Created."<<endl;
+					cout<<"Directory Created"<<endl;
 				}
 			}else{
-				cout<<"Directory already exist."<<endl;
+				cout<<"Directory already exist"<<endl;
+			}
+			break;
+		}
+
+		case str2int("rm"):{
+			dir->search_fileSet();
+			vector<string> temp_fileSet = dir->get_fileSet();
+			int s = 0;
+			for(const auto a:temp_fileSet){
+				if(!this->cmd_set[1].compare(a)){
+					s = 1;
+					break;
+				}
+			}
+			string new_path;
+			if(!s){
+				cout<<"File\\Directory not found"<<endl;
+				break;
+			}
+
+			if((this->cmd_set[1][0])=='/'){
+				this->delete_dir(dir, this->cmd_set[1]);
+
+			}else{
+				new_path = dir->get_dir() + "/" + this->cmd_set[1];
+				if(remove(new_path.c_str())){
+					perror("Error");
+				}else{
+					cout<<"File deleted"<<endl;
+				}
 			}
 			break;
 		}
 	}
+}
+
+void cmd_line::delete_dir(get_directory* dir, string dir_name){
+	string new_path = dir->get_dir() + dir_name;
+	string old_path = dir->get_dir();
+	string temp_path;
+	dir->set_dir(new_path);
+	dir->search_fileSet();
+	vector<string> temp_fileSet = dir->get_fileSet();
+
+	for(const auto a:temp_fileSet){
+		if(a[0]=='/'){
+			this->delete_dir(dir, a);
+		}else{
+			temp_path = new_path + "/" + a;
+			if(remove(temp_path.c_str())){
+				cout<<temp_path<<endl;
+				perror("Error when deleting file");
+				break;
+			}
+		}
+	}
+	if(rmdir(new_path.c_str())){
+		cout<<"Directory delete error: "<<strerror(errno)<<endl;
+	}
+	dir->set_dir(old_path);
+	return;
 }

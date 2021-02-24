@@ -14,5 +14,5 @@ private:
 	string cmd_input;
 	vector<string> cmd_set;
 	vector<string> split(string in, string delim);
-	
+	void delete_dir(get_directory* dir, string dir_name);
 };
