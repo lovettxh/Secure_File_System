@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <unistd.h>
 #include <cstring>
@@ -8,7 +9,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
-
+#include "utilities.h"
 #include "cmd_line.h"
 using namespace std;
 
@@ -76,20 +77,35 @@ vector<string> get_directory::get_fileSet(){
 }
 
 int main(){
+
 	char buff[100];
 	getcwd(buff, 100);
 	get_directory dir(buff);
 	cmd_line c("");
-
 	string temp;
-
 	while(1){
 		cout<<dir.get_dir()<<"$ ";
 		getline(cin, temp);
 		
 		c.set_input(temp);
-		c.cmd_process(&dir);
+		c.directory_cmd(&dir);
+		c.file_cmd(&dir);
 
 	}
+/*
+	
+	string temp;
+	getline(cin, temp);
+	ofstream file;
+	file.open("1.txt", ios::out);
+	temp = string_handle(temp);
+	file<<temp;
+	file.close();
+/*
+	string t = "2222123333";
+	vector<string> s = split(t, "12");
+	for(auto a:s)
+		cout<<a<<endl;
 	return 0;
+	*/
 }

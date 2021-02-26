@@ -7,61 +7,35 @@
 #include <ctype.h>
 #include <cstring>
 #include <vector>
-#include <unordered_map>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include "cmd_line.h"
+#include "utilities.h"
 
 using namespace std;
 
-constexpr unsigned int str2int(const char* str, int h = 0){
-	    return !str[h] ? 5381 : (str2int(str, h+1) * 33) ^ str[h];
-}
-
 cmd_line::cmd_line(string a){
 	this->cmd_input = a;
+	this->cmd_set = split(this->cmd_input, " ");
 }
 
-vector<string> cmd_line::split(string in, string delim){
-	vector<string> result;
-	if(strcmp(in.c_str(), "") == 0){
-		return result;
-	}
-	char* in_char = new char[in.length()+1];
-	char* delim_char = new char[delim.length()+1];
-	strcpy(in_char, in.c_str());
-	strcpy(delim_char, delim.c_str());
 
-	char* s = strtok(in_char, delim_char);
-	while(s){
-		string temp = s;
-		result.push_back(temp);
-		s = strtok(NULL, delim_char);
-	}
-	delete []in_char;
-	delete []delim_char;
-	return result;
-
-}
 
 void cmd_line::set_input(string a){
 	this->cmd_input = a;
+	this->cmd_set = split(this->cmd_input, " ");
 }
 
 
 
-void cmd_line::cmd_process(get_directory* dir){
-
-	this->cmd_set = this->split(this->cmd_input, " ");
-
-	dir->search_fileSet();
-	vector<string> temp_fileSet = dir->get_fileSet();
+void cmd_line::directory_cmd(get_directory* dir){
 
 	switch(str2int(this->cmd_set[0].c_str())){
 
 		case str2int("ls"):{
-			
+			dir->search_fileSet();
+			vector<string> temp_fileSet = dir->get_fileSet();
 			for(const auto a:temp_fileSet){
 				cout<<a<<"     ";
 			}
@@ -78,7 +52,7 @@ void cmd_line::cmd_process(get_directory* dir){
 				if(!dir->get_dir().compare(dir->get_home_dir())){
 					break;
 				}
-				vector<string> dir_temp = this->split(dir->get_dir(), "/");
+				vector<string> dir_temp = split(dir->get_dir(), "/");
 				dir_temp.pop_back();
 				
 				for(const auto a:dir_temp){
@@ -88,14 +62,8 @@ void cmd_line::cmd_process(get_directory* dir){
 				break;
 			}
 
-			int s = 0;
-			for(const auto a:temp_fileSet){
-				if(!this->cmd_set[1].compare(a)){
-					s = 1;
-					break;
-				}
-			}
-			if(!s){
+
+			if(!this->check_exist(dir, this->cmd_set[1])){
 				cout<<"Directory not found"<<endl;
 				break;
 			}else if((this->cmd_set[1][0])!='/'){
@@ -107,17 +75,7 @@ void cmd_line::cmd_process(get_directory* dir){
 			break;
 		}
 
-		case str2int("touch"):{
-			string file_dir;
-			if(isdigit(this->cmd_set[1][0]) || isalpha(this->cmd_set[1][0])){
-				file_dir = dir->get_dir() + "/" + this->cmd_set[1];
-				ofstream file {file_dir};
-			}else{
-				cout<<"Invalid file name"<<endl;
-			}
-			break;
-		}
-
+		
 		case str2int("mkdir"):{
 			if((this->cmd_set[1][0])!='/'){
 				cout<<"Invalid Directory name"<<endl;
@@ -138,21 +96,11 @@ void cmd_line::cmd_process(get_directory* dir){
 		}
 
 		case str2int("rm"):{
-			dir->search_fileSet();
-			vector<string> temp_fileSet = dir->get_fileSet();
-			int s = 0;
-			for(const auto a:temp_fileSet){
-				if(!this->cmd_set[1].compare(a)){
-					s = 1;
-					break;
-				}
-			}
 			string new_path;
-			if(!s){
+			if(!this->check_exist(dir, this->cmd_set[1])){
 				cout<<"File\\Directory not found"<<endl;
 				break;
 			}
-
 			if((this->cmd_set[1][0])=='/'){
 				this->delete_dir(dir, this->cmd_set[1]);
 
@@ -167,6 +115,84 @@ void cmd_line::cmd_process(get_directory* dir){
 			break;
 		}
 	}
+}
+
+void cmd_line::file_cmd(get_directory* dir){
+
+	switch(str2int(this->cmd_set[0].c_str())){
+		case str2int("touch"):{
+			string file_dir;
+			if(isdigit(this->cmd_set[1][0]) || isalpha(this->cmd_set[1][0])){
+				file_dir = dir->get_dir() + "/" + this->cmd_set[1];
+				ofstream file {file_dir};
+			}else{
+				cout<<"Invalid file name"<<endl;
+			}
+			break;
+		}
+
+		case str2int("cat"):{
+			if(check_exist(dir, this->cmd_set[1])){
+				if(this->cmd_set[1][0]!='/'){
+					string file_dir = dir->get_dir() + "/" + this->cmd_set[1];
+					fstream file;
+					file.open(file_dir, ios::in);
+					string temp;
+					while(file>>temp)
+						cout<<temp<<endl;
+					file.close();
+
+				}else{
+					cout<<"Target cannot be a directory"<<endl;
+				}
+			}else{
+				cout<<"File not found"<<endl;
+			}
+			
+			break;
+		}
+
+		case str2int("echo"):{
+			size_t start = this->cmd_input.find_first_of("\"");
+			size_t end = this->cmd_input.find_last_of("\"");
+			string w = this->cmd_input.substr(start + 1, end-start-1);
+			w = string_handle(w);
+			string file_dir;
+			if(!this->check_exist(dir, this->cmd_set.back())){
+				if(isdigit(this->cmd_set.back()[0]) || isalpha(this->cmd_set.back()[0])){
+					file_dir = dir->get_dir() + "/" + this->cmd_set.back();
+					ofstream file {file_dir};
+					ofstream file1;
+					file1.open(file_dir, ios::out);
+					file1<<w;
+					file1.close();
+					cout<<"file created"<<endl;
+				}else{
+					cout<<"Invalid file name"<<endl;
+				}
+			}else{
+				file_dir = dir->get_dir() + "/" + this->cmd_set.back();
+				ofstream file1;
+				file1.open(file_dir, ios::out | ios::app);
+				file1<<w;
+				file1.close();
+			}
+			break;
+		}
+	}
+}
+
+
+
+bool cmd_line::check_exist(get_directory* dir, string name){
+	dir->search_fileSet();
+	vector<string> temp_fileSet = dir->get_fileSet();
+	for(const auto a:temp_fileSet){
+		if(!name.compare(a)){
+			return true;
+		}
+	}
+	return false;
 }
 
 void cmd_line::delete_dir(get_directory* dir, string dir_name){
