@@ -11,3 +11,4 @@ constexpr unsigned int str2int(const char* str, int h = 0){
 vector<string> split(string in, string delim);
 string string_handle(string input);
 string string_replace(string input, string old_s, string new_s);
+int getch();

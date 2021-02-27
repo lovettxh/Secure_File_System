@@ -6,6 +6,7 @@
 #include <ctype.h>
 #include <cstring>
 #include <vector>
+#include <termios.h>
 #include <sys/types.h>
 
 using namespace std;
@@ -56,3 +57,17 @@ string string_handle(string input){
 	return new_s;
 }
 
+int getch() {
+    int ch;
+    struct termios t_old, t_new;
+
+    tcgetattr(STDIN_FILENO, &t_old);
+    t_new = t_old;
+    t_new.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &t_new);
+
+    ch = getchar();
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &t_old);
+    return ch;
+}

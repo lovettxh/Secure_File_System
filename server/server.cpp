@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include "utilities.h"
 #include "cmd_line.h"
+#include "login.h"
 using namespace std;
 
 
@@ -77,7 +78,7 @@ vector<string> get_directory::get_fileSet(){
 }
 
 int main(){
-
+/*
 	char buff[100];
 	getcwd(buff, 100);
 	get_directory dir(buff);
@@ -92,20 +93,7 @@ int main(){
 		c.file_cmd(&dir);
 
 	}
-/*
-	
-	string temp;
-	getline(cin, temp);
-	ofstream file;
-	file.open("1.txt", ios::out);
-	temp = string_handle(temp);
-	file<<temp;
-	file.close();
-/*
-	string t = "2222123333";
-	vector<string> s = split(t, "12");
-	for(auto a:s)
-		cout<<a<<endl;
-	return 0;
-	*/
+*/
+	login l;
+	l.login_page();
 }
