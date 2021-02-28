@@ -57,6 +57,7 @@ string string_handle(string input){
 	return new_s;
 }
 
+// www.cplusplus.com/articles/E6vU7k9E/#UNIX-e1
 int getch() {
     int ch;
     struct termios t_old, t_new;

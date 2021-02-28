@@ -30,7 +30,9 @@ void cmd_line::set_input(string a){
 
 
 void cmd_line::directory_cmd(get_directory* dir){
-
+	if(this->cmd_set.empty()){
+		return;
+	}
 	switch(str2int(this->cmd_set[0].c_str())){
 
 		case str2int("ls"):{
@@ -118,7 +120,9 @@ void cmd_line::directory_cmd(get_directory* dir){
 }
 
 void cmd_line::file_cmd(get_directory* dir){
-
+	if(this->cmd_set.empty()){
+		return;
+	}
 	switch(str2int(this->cmd_set[0].c_str())){
 		case str2int("touch"):{
 			string file_dir;
@@ -138,7 +142,7 @@ void cmd_line::file_cmd(get_directory* dir){
 					fstream file;
 					file.open(file_dir, ios::in);
 					string temp;
-					while(file>>temp)
+					while(getline(file, temp))
 						cout<<temp<<endl;
 					file.close();
 

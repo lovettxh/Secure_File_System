@@ -78,7 +78,7 @@ vector<string> get_directory::get_fileSet(){
 }
 
 int main(){
-/*
+
 	char buff[100];
 	getcwd(buff, 100);
 	get_directory dir(buff);
@@ -86,14 +86,17 @@ int main(){
 	string temp;
 	while(1){
 		cout<<dir.get_dir()<<"$ ";
-		getline(cin, temp);
-		
+		getline(cin, temp);	
 		c.set_input(temp);
 		c.directory_cmd(&dir);
 		c.file_cmd(&dir);
 
 	}
-*/
-	login l;
-	l.login_page();
+/*
+	string t;
+	getline(cin, t);
+	cout<<str2int(t.c_str())<<endl;
+	// login l;
+	// l.login_page();
+	*/
 }
