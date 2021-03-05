@@ -1,7 +1,7 @@
 CC = g++
 LFLAGS = 
 CFLAGS =-c -Wall -std=c++11 -O2
-OBJS = server.o cmd_line.o utilities.o login.o
+OBJS = server.o cmd_line.o utilities.o login.o directory.o
 EXE = server
 
 $(EXE): $(OBJS)
@@ -16,7 +16,10 @@ login.o: login.cpp login.h
 cmd_line.o: cmd_line.cpp cmd_line.h utilities.o
 	g++ cmd_line.cpp -o cmd_line.o $(CFLAGS)
 
-server.o: cmd_line.o server.cpp server.h utilities.o
+directory.o: directory.cpp directory.h login.o cmd_line.o utilities.o
+	g++ directory.cpp -o directory.o $(CFLAGS)
+
+server.o: server.cpp directory.o
 	g++ server.cpp -o server.o $(CFLAGS)
 
 

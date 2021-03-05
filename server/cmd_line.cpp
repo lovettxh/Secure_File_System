@@ -20,7 +20,9 @@ cmd_line::cmd_line(string a){
 	this->cmd_set = split(this->cmd_input, " ");
 }
 
-
+void cmd_line::set_fd(int fd){
+	this->fd = fd;
+}
 
 void cmd_line::set_input(string a){
 	this->cmd_input = a;
@@ -38,15 +40,21 @@ void cmd_line::directory_cmd(get_directory* dir){
 		case str2int("ls"):{
 			dir->search_fileSet();
 			vector<string> temp_fileSet = dir->get_fileSet();
+			string out = "";
 			for(const auto a:temp_fileSet){
-				cout<<a<<"     ";
+				//cout<<a<<"     ";
+				out += (a + "     ");
 			}
-			cout<<endl;
+			out+="\n";
+			write(this->fd, "o",1);
+			write(this->fd, str_length(out).c_str(), str_length(out).length());
+			write(this->fd, out.c_str(), out.length());
 			break;
 		}
 
 		case str2int("cd"):{
 			string new_dir = "";
+			string message;
 			if(!this->cmd_set[1].compare("~")){
 				dir->set_dir(dir->get_home_dir());
 				break;
@@ -58,7 +66,8 @@ void cmd_line::directory_cmd(get_directory* dir){
 				dir_temp.pop_back();
 				
 				for(const auto a:dir_temp){
-					new_dir += ("/" + a);
+					if(a.compare(""))
+						new_dir += ("/" + a);
 				}
 				dir->set_dir(new_dir);
 				break;
@@ -66,10 +75,18 @@ void cmd_line::directory_cmd(get_directory* dir){
 
 
 			if(!this->check_exist(dir, this->cmd_set[1])){
-				cout<<"Directory not found"<<endl;
+				//cout<<"Directory not found"<<endl;
+				message = "Directory not found\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
 				break;
 			}else if((this->cmd_set[1][0])!='/'){
-				cout<<"Target is not a directory"<<endl;
+				//cout<<"Target is not a directory"<<endl;
+				message = "Target is not a directory\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd ,message.c_str(), message.length());
 				break;
 			}
 			new_dir = dir->get_dir() + this->cmd_set[1];
@@ -79,28 +96,48 @@ void cmd_line::directory_cmd(get_directory* dir){
 
 		
 		case str2int("mkdir"):{
+			string message;
 			if((this->cmd_set[1][0])!='/'){
-				cout<<"Invalid Directory name"<<endl;
+				//cout<<"Invalid Directory name"<<endl;
+				message ="Invalid Directory name\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
 				break;
 			}
 			string dir_path = dir->get_dir() + this->cmd_set[1];
 			
 			if(opendir(dir_path.c_str())==NULL){
 				if(mkdir(dir_path.c_str(), 0777)){
-					cout<<"Error: "<<strerror(errno)<<endl;
+					message = strerror(errno);
+					message = "Error: " + message +"\n";
+					write(this->fd,"o",1);
+					write(this->fd, str_length(message).c_str(), str_length(message).length());
+					write(this->fd, message.c_str(), message.length());
+					//cout<<"Error: "<<strerror(errno)<<endl;
 				}else{
-					cout<<"Directory Created"<<endl;
+					message = "Directory Created\n";
+					write(this->fd,"o",1);
+					write(this->fd, str_length(message).c_str(), str_length(message).length());
+					write(this->fd, message.c_str(), message.length());
+					//cout<<"Directory Created"<<endl;
 				}
 			}else{
-				cout<<"Directory already exist"<<endl;
+				message = "Directory already exist\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				//cout<<"Directory already exist"<<endl;
 			}
 			break;
 		}
 
 		case str2int("rm"):{
 			string new_path;
+			string message;
 			if(!this->check_exist(dir, this->cmd_set[1])){
-				cout<<"File\\Directory not found"<<endl;
+				//cout<<"File\\Directory not found"<<endl;
+
 				break;
 			}
 			if((this->cmd_set[1][0])=='/'){
@@ -111,7 +148,11 @@ void cmd_line::directory_cmd(get_directory* dir){
 				if(remove(new_path.c_str())){
 					perror("Error");
 				}else{
-					cout<<"File deleted"<<endl;
+					//cout<<"File deleted"<<endl;
+					message = "File deleted\n";
+					write(this->fd,"o",1);
+					write(this->fd, str_length(message).c_str(), str_length(message).length());
+					write(this->fd, message.c_str(), message.length());
 				}
 			}
 			break;
@@ -125,38 +166,58 @@ void cmd_line::file_cmd(get_directory* dir){
 	}
 	switch(str2int(this->cmd_set[0].c_str())){
 		case str2int("touch"):{
+			string message;
 			string file_dir;
 			if(isdigit(this->cmd_set[1][0]) || isalpha(this->cmd_set[1][0])){
 				file_dir = dir->get_dir() + "/" + this->cmd_set[1];
 				ofstream file {file_dir};
 			}else{
-				cout<<"Invalid file name"<<endl;
+				//cout<<"Invalid file name"<<endl;
+				message = "Invalid file name\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+
 			}
 			break;
 		}
 
 		case str2int("cat"):{
+			string message;
 			if(check_exist(dir, this->cmd_set[1])){
 				if(this->cmd_set[1][0]!='/'){
 					string file_dir = dir->get_dir() + "/" + this->cmd_set[1];
 					fstream file;
 					file.open(file_dir, ios::in);
 					string temp;
-					while(getline(file, temp))
-						cout<<temp<<endl;
+					while(getline(file, temp)){
+						//cout<<temp<<endl;
+						temp+="\n";
+						write(this->fd,"o",1);
+						write(this->fd, str_length(temp).c_str(), str_length(temp).length());
+						write(this->fd, temp.c_str(), temp.length());
+					}
 					file.close();
 
 				}else{
-					cout<<"Target cannot be a directory"<<endl;
+					message = "Target cannot be a directory\n";
+					write(this->fd,"o",1);
+					write(this->fd, str_length(message).c_str(), str_length(message).length());
+					write(this->fd, message.c_str(), message.length());
+					//cout<<"Target cannot be a directory"<<endl;
 				}
 			}else{
-				cout<<"File not found"<<endl;
+				message = "File not found\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				//cout<<"File not found"<<endl;
 			}
-			
 			break;
 		}
 
 		case str2int("echo"):{
+			string message;
 			size_t start = this->cmd_input.find_first_of("\"");
 			size_t end = this->cmd_input.find_last_of("\"");
 			string w = this->cmd_input.substr(start + 1, end-start-1);
@@ -170,9 +231,18 @@ void cmd_line::file_cmd(get_directory* dir){
 					file1.open(file_dir, ios::out);
 					file1<<w;
 					file1.close();
-					cout<<"file created"<<endl;
+
+					message = "File created\n";
+					write(this->fd,"o",1);
+					write(this->fd, str_length(message).c_str(), str_length(message).length());
+					write(this->fd, message.c_str(), message.length());
+					//cout<<"file created"<<endl;
 				}else{
-					cout<<"Invalid file name"<<endl;
+					message = "Invalid file name\n";
+					write(this->fd,"o",1);
+					write(this->fd, str_length(message).c_str(), str_length(message).length());
+					write(this->fd, message.c_str(), message.length());
+					//cout<<"Invalid file name"<<endl;
 				}
 			}else{
 				file_dir = dir->get_dir() + "/" + this->cmd_set.back();
@@ -200,6 +270,7 @@ bool cmd_line::check_exist(get_directory* dir, string name){
 }
 
 void cmd_line::delete_dir(get_directory* dir, string dir_name){
+	string message;
 	string new_path = dir->get_dir() + dir_name;
 	string old_path = dir->get_dir();
 	string temp_path;
@@ -213,14 +284,18 @@ void cmd_line::delete_dir(get_directory* dir, string dir_name){
 		}else{
 			temp_path = new_path + "/" + a;
 			if(remove(temp_path.c_str())){
-				cout<<temp_path<<endl;
 				perror("Error when deleting file");
 				break;
 			}
 		}
 	}
 	if(rmdir(new_path.c_str())){
-		cout<<"Directory delete error: "<<strerror(errno)<<endl;
+		message = strerror(errno);
+		message = "Directory delete error: " + message + "\n";
+		write(this->fd,"o",1);
+		write(this->fd, str_length(message).c_str(), str_length(message).length());
+		write(this->fd, message.c_str(), message.length());
+		//cout<<"Directory delete error: "<<strerror(errno)<<endl;
 	}
 	dir->set_dir(old_path);
 	return;
