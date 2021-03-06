@@ -3,11 +3,18 @@
 #include <termios.h>
 #include <stdio.h>
 #include <string>
+#include <unistd.h>
 #include "login.h"
 #include "utilities.h"
 using namespace std;
 
+
+void login::set_fd(int fd){
+	this->fd = fd;
+}
+
 void login::login_page(){
+
 	char temp;
 	cout<<"Welcome to SFS!"<<endl;
 	bool c = false;
@@ -22,6 +29,13 @@ void login::login_page(){
 			c = this->user_page();
 		}else{
 			cout<<"Invalid input"<<endl;
+		}
+
+		write(this->fd, "0", 1);
+		if(c){
+			write(this->fd, "t", 1);
+		}else{
+			write(this->fd, "f", 1);
 		}
 	}
 }
@@ -51,22 +65,47 @@ void login::group_page(){
 }
 
 void login::read_group(){
-	this->group_set.clear();
+	char l[3];
+	char g[1024];
+	int s = 1;
+
 	string group_name;
-	fstream file;
-	file.open("g.txt",ios::in);
-	while(getline(file, group_name)){
-		this->group_set.push_back(group_name);
+	this->group_set.clear();
+	// string group_name;
+	// fstream file;
+	// file.open("g.txt",ios::in);
+	// while(getline(file, group_name)){
+	// 	this->group_set.push_back(group_name);
+	// }
+	// file.close();
+	write(this->fd, "1", 1);
+	while(s){
+		char g[1024] = {0};
+		read(this->fd, l, 3);
+		s = atoi(l);
+		read(this->fd, g, s);
+		if(s){
+			group_name = g;
+			this->group_set.push_back(group_name);
+		}
 	}
-	file.close();
 }
 
 void login::save_group(){
-	fstream file;
-	file.open("g.txt",ios::out);
-	for(auto a:this->group_set)
-		file<<a<<endl;
-	file.close();
+	// fstream file;
+	// file.open("g.txt",ios::out);
+	// for(auto a:this->group_set)
+	// 	file<<a<<endl;
+	// file.close();
+	string temp;
+
+	write(this->fd, "2", 1);
+	for(auto a:this->group_set){
+		temp = str_length(a);
+		write(this->fd, temp.c_str(), 3);
+		write(this->fd, a.c_str(), a.length());
+	}
+	write(this->fd, "000", 3);
 }
 
 bool login::check_group(string name){
@@ -158,32 +197,64 @@ bool login::check_user_name(string name){
 }
 
 void login::read_user_set(){
-	fstream file;
-	file.open("l.txt", ios::in);
-	string temp;
-	user u;
+	char l[3];
+	char u[1024];
 	vector<string> user_info;
+	string temp;
+
+	int s = 1;
+	user t;
 	this->user_set.clear();
-	while(getline(file, temp)){
-		user_info = split(temp, " ");
-		u = {user_info[0], user_info[1], user_info[2]};
-		this->user_set.push_back(u);
+	write(this->fd, "3", 1);
+	while(s){
+		char u[1024] ={0};
+		read(this->fd, l, 3);
+		s = atoi(l);
+		read(this->fd, u, s);
+		if(s){
+			temp = u;
+			user_info = split(temp, " ");
+			t = {user_info[0], user_info[1], user_info[2]};
+			this->user_set.push_back(t);
+		}
+
 	}
-	file.close();
+	// fstream file;
+	// file.open("l.txt", ios::in);
+	// string temp;
+	// user u;
+	// vector<string> user_info;
+	// this->user_set.clear();
+	// while(getline(file, temp)){
+	// 	user_info = split(temp, " ");
+	// 	u = {user_info[0], user_info[1], user_info[2]};
+	// 	this->user_set.push_back(u);
+	// }
+	// file.close();
+
 }
 
 void login::save_user_set(){
-	fstream file;
-	file.open("l.txt", ios::out);
 	string temp;
 
+	write(this->fd, "4", 1);
 	for(auto a:this->user_set){
-
 		temp = a.id + " " + a.password + " " + a.group;
-
-		file<<temp<<endl;
+		write(this->fd, str_length(temp).c_str(), 3);
+		write(this->fd, temp.c_str(), temp.length());
 	}
-	file.close();
+	write(this->fd, "000", 3);
+	// fstream file;
+	// file.open("l.txt", ios::out);
+	// string temp;
+
+	// for(auto a:this->user_set){
+
+	// 	temp = a.id + " " + a.password + " " + a.group;
+
+	// 	file<<temp<<endl;
+	// }
+	// file.close();
 }
 
 bool login::user_login(){

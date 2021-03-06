@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string>
@@ -11,7 +12,6 @@
 
 #include "utilities.h"
 #include "cmd_line.h"
-#include "login.h"
 using namespace std;
 
 int server_init(int port, char* ip){
@@ -38,6 +38,102 @@ int server_init(int port, char* ip){
 	return socket_fd;
 }
 
+void entering_page(int fd){
+	char mode;
+	char l[3];
+	char g[1024];
+	fstream file;
+	string temp;
+	int s;
+	while(1){
+		read(fd, &mode, 1);
+		cout<<mode<<endl;
+		if(mode == '1'){
+			file.open("g.txt", ios::in);
+			while(getline(file, temp)){
+				write(fd, str_length(temp).c_str(), 3);
+				write(fd, temp.c_str(), temp.length());
+			}
+			write(fd, "000", 3);
+			file.close();
+
+		}else if(mode == '2'){
+			file.open("g.txt", ios::out);
+			s = 1;
+			while(s){
+				char g[1024] ={0};
+				read(fd, l, 3);
+				s = atoi(l);
+				if(s){
+					read(fd, g, s);
+					temp = g;
+					file<<temp<<endl;
+				}
+			}
+			file.close();
+
+		}else if(mode == '3'){
+			file.open("l.txt", ios::in);
+			while(getline(file, temp)){
+				write(fd, str_length(temp).c_str(), 3);
+				write(fd, temp.c_str(), temp.length());
+			}
+			write(fd, "000", 3);
+			file.close();
+
+		}else if(mode == '4'){
+			file.open("l.txt", ios::out);
+			s = 1;
+			while(s){
+				char g[1024] = {0};
+				read(fd, l, 3);
+				s = atoi(l);
+				if(s){
+					read(fd, g, s);
+					temp = g;
+					file<<temp<<endl;
+				}
+			}
+			file.close();
+
+		}else if(mode == '0'){
+			char c;
+			read(fd, &c, 1);
+			if(c == 't')
+				break;
+		}
+	}
+}
+
+void SFS_page(get_directory dir, cmd_line c, int fd){
+	string output;
+	string temp;
+	char l[3];
+	char input[1024];
+	int s = 0;
+	while(1){
+		char input[1024] = {0};
+		output = dir.get_dir() + "$ ";
+		write(fd, "o", 1);
+		temp = str_length(output);
+		write(fd, temp.c_str(), 3);
+		write(fd, output.c_str(), output.length());
+
+
+		write(fd, "i", 1);
+		read(fd, l, 3);
+		s = atoi(l);
+		cout<<l<<endl;
+		read(fd, input, s);
+		cout<<input<<endl;
+		temp = input;
+		c.set_input(temp);
+		c.directory_cmd(&dir);
+		c.file_cmd(&dir);
+
+	}
+}
+
 void* server_echo(void* arg){
 	int fd = *(int*)(&arg);
 	if(fd == -1){
@@ -49,7 +145,6 @@ void* server_echo(void* arg){
 	}
 }
 
-
 int main(){
 	int socket_fd = server_init(5001, "127.0.0.1");
 
@@ -57,34 +152,12 @@ int main(){
 	getcwd(buff, 100);
 	get_directory dir(buff);
 	cmd_line c("");
-	char l[3];
-	char input[1024];
-	string output;
-	string temp;
-	int s = 0;
+	
 	int fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);
+	entering_page(fd);
 	c.set_fd(fd);
-	while(1){
-		char input[1024] = {0};
-		output = dir.get_dir() + "$ ";
-		write(fd, "o", 1);
-		temp = str_length(output);
-		write(fd, temp.c_str(), temp.length());
-		write(fd, output.c_str(), output.length());
 
-
-		write(fd, "i", 1);
-		read(fd, l, 3);
-		s = atoi(l);
-		cout<<s<<endl;
-		read(fd, input, s);
-		cout<<input<<endl;
-		temp = input;
-		c.set_input(temp);
-		c.directory_cmd(&dir);
-		c.file_cmd(&dir);
-
-	}
+	SFS_page(dir, c, fd);
 	// 
 	// for(int i = 0; i < 100; i++){
 	// 	int fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);
@@ -93,10 +166,4 @@ int main(){
 	// }
 	// login l;
 	// l.login_page();
-
-/*
-	string t;
-	getline(cin, t);
-	cout<<str2int(t.c_str())<<endl;
-	*/
 }

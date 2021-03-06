@@ -9,6 +9,7 @@
 #include<unistd.h>
 #include<iostream>
 #include "utilities.h"
+#include "login.h"
 
 using namespace std;
 
@@ -34,8 +35,7 @@ int client_init(int port, char* ip){
 	return socket_fd;
 }
 
-int main(){
-	int socket_fd = client_init(5001, "127.0.0.1");
+void SFS_page(int socket_fd){
 	char indicator;
 	int s = 0;
 	char l[3];
@@ -46,16 +46,24 @@ int main(){
 		char output[1024] = {0};
 		if(indicator == 'o'){
 			read(socket_fd, l, 3);
+
 			s = atoi(l);
-			cout<<s<<endl;
 			read(socket_fd, output, s);
 			cout<<output;
 		}else if(indicator == 'i'){
 
 			getline(cin, input);
-			write(socket_fd, str_length(input).c_str(), str_length(input).length());
+			write(socket_fd, str_length(input).c_str(), 3);
 			write(socket_fd, input.c_str(), input.length());
 		}
 	}
+}
+
+int main(){
+	int socket_fd = client_init(5001, "127.0.0.1");
+	login l;
+	l.set_fd(socket_fd);
+	l.login_page();
+	SFS_page(socket_fd);
 	return 0;
 }

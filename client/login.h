@@ -11,7 +11,7 @@ struct user{
 class login{
 public:
 	void login_page();
-	
+	void set_fd(int fd);
 
 private:
 	void group_page();
@@ -28,5 +28,6 @@ private:
 	string password;
 	vector<user> user_set;
 	vector<string> group_set;
+	int fd;
 };
 
