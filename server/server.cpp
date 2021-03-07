@@ -9,7 +9,6 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
 #include "utilities.h"
 #include "cmd_line.h"
 using namespace std;
@@ -38,7 +37,7 @@ int server_init(int port, char* ip){
 	return socket_fd;
 }
 
-void entering_page(int fd){
+string entering_page(int fd){
 	char mode;
 	char l[3];
 	char g[1024];
@@ -95,7 +94,6 @@ void entering_page(int fd){
 				}
 			}
 			file.close();
-
 		}else if(mode == '0'){
 			char c;
 			read(fd, &c, 1);
@@ -103,6 +101,12 @@ void entering_page(int fd){
 				break;
 		}
 	}
+	char out[1024] = {0};
+	read(fd, l, 3);
+	s = atoi(l);
+	read(fd, out, s);
+	temp = out;
+	return temp;
 }
 
 void SFS_page(get_directory dir, cmd_line c, int fd){
@@ -113,13 +117,11 @@ void SFS_page(get_directory dir, cmd_line c, int fd){
 	int s = 0;
 	while(1){
 		char input[1024] = {0};
-		output = dir.get_dir() + "$ ";
+		output = dir.user_dir() + "$ ";
 		write(fd, "o", 1);
 		temp = str_length(output);
 		write(fd, temp.c_str(), 3);
 		write(fd, output.c_str(), output.length());
-
-
 		write(fd, "i", 1);
 		read(fd, l, 3);
 		s = atoi(l);
@@ -146,7 +148,10 @@ void* server_echo(void* arg){
 }
 
 int main(){
-	int socket_fd = server_init(5001, "127.0.0.1");
+	
+	string u;
+
+	int socket_fd = server_init(5000, "127.0.0.1");
 
 	char buff[100];
 	getcwd(buff, 100);
@@ -154,10 +159,11 @@ int main(){
 	cmd_line c("");
 	
 	int fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);
-	entering_page(fd);
+	u = entering_page(fd);
 	c.set_fd(fd);
-
+	dir.set_user(u);
 	SFS_page(dir, c, fd);
+
 	// 
 	// for(int i = 0; i < 100; i++){
 	// 	int fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);

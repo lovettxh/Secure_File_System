@@ -1,13 +1,13 @@
-#include<stdio.h>
-#include<sys/types.h>
-#include<stdlib.h>
-#include<string>
-#include<string.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
-#include<arpa/inet.h>
-#include<unistd.h>
-#include<iostream>
+#include <stdio.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <string>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <iostream>
 #include "utilities.h"
 #include "login.h"
 
@@ -46,12 +46,10 @@ void SFS_page(int socket_fd){
 		char output[1024] = {0};
 		if(indicator == 'o'){
 			read(socket_fd, l, 3);
-
 			s = atoi(l);
 			read(socket_fd, output, s);
 			cout<<output;
 		}else if(indicator == 'i'){
-
 			getline(cin, input);
 			write(socket_fd, str_length(input).c_str(), 3);
 			write(socket_fd, input.c_str(), input.length());
@@ -60,10 +58,11 @@ void SFS_page(int socket_fd){
 }
 
 int main(){
-	int socket_fd = client_init(5001, "127.0.0.1");
+	int socket_fd = client_init(5000, "127.0.0.1");
 	login l;
 	l.set_fd(socket_fd);
 	l.login_page();
 	SFS_page(socket_fd);
+
 	return 0;
 }

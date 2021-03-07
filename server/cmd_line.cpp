@@ -30,7 +30,6 @@ void cmd_line::set_input(string a){
 }
 
 
-
 void cmd_line::directory_cmd(get_directory* dir){
 	if(this->cmd_set.empty()){
 		return;
@@ -55,6 +54,13 @@ void cmd_line::directory_cmd(get_directory* dir){
 		case str2int("cd"):{
 			string new_dir = "";
 			string message;
+			if(this->cmd_set.size() != 2){
+				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
 			if(!this->cmd_set[1].compare("~")){
 				dir->set_dir(dir->get_home_dir());
 				break;
@@ -72,7 +78,6 @@ void cmd_line::directory_cmd(get_directory* dir){
 				dir->set_dir(new_dir);
 				break;
 			}
-
 
 			if(!this->check_exist(dir, this->cmd_set[1])){
 				//cout<<"Directory not found"<<endl;
@@ -97,6 +102,13 @@ void cmd_line::directory_cmd(get_directory* dir){
 		
 		case str2int("mkdir"):{
 			string message;
+			if(this->cmd_set.size() != 2){
+				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
 			if((this->cmd_set[1][0])!='/'){
 				//cout<<"Invalid Directory name"<<endl;
 				message ="Invalid Directory name\n";
@@ -135,9 +147,19 @@ void cmd_line::directory_cmd(get_directory* dir){
 		case str2int("rm"):{
 			string new_path;
 			string message;
+			if(this->cmd_set.size() != 2){
+				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
 			if(!this->check_exist(dir, this->cmd_set[1])){
 				//cout<<"File\\Directory not found"<<endl;
-
+				message = "File\\Directory not found\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
 				break;
 			}
 			if((this->cmd_set[1][0])=='/'){
@@ -168,6 +190,13 @@ void cmd_line::file_cmd(get_directory* dir){
 		case str2int("touch"):{
 			string message;
 			string file_dir;
+			if(this->cmd_set.size() != 2){
+				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
 			if(isdigit(this->cmd_set[1][0]) || isalpha(this->cmd_set[1][0])){
 				file_dir = dir->get_dir() + "/" + this->cmd_set[1];
 				ofstream file {file_dir};
@@ -184,6 +213,13 @@ void cmd_line::file_cmd(get_directory* dir){
 
 		case str2int("cat"):{
 			string message;
+			if(this->cmd_set.size() != 2){
+				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
 			if(check_exist(dir, this->cmd_set[1])){
 				if(this->cmd_set[1][0]!='/'){
 					string file_dir = dir->get_dir() + "/" + this->cmd_set[1];
@@ -218,6 +254,13 @@ void cmd_line::file_cmd(get_directory* dir){
 
 		case str2int("echo"):{
 			string message;
+			if(this->cmd_set.size() < 3){
+				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
 			size_t start = this->cmd_input.find_first_of("\"");
 			size_t end = this->cmd_input.find_last_of("\"");
 			string w = this->cmd_input.substr(start + 1, end-start-1);

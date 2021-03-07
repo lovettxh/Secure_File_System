@@ -12,6 +12,9 @@ class login{
 public:
 	void login_page();
 	void set_fd(int fd);
+	string id;
+	string group;
+	string password_input();
 
 private:
 	void group_page();
@@ -20,12 +23,13 @@ private:
 	bool check_group(string name);
 	bool user_page();
 	bool user_sign_in();
-	string password_input();
+	
 	bool check_user_name(string name);
 	void read_user_set();
 	void save_user_set();
 	bool user_login();
 	string password;
+
 	vector<user> user_set;
 	vector<string> group_set;
 	int fd;

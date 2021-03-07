@@ -14,12 +14,10 @@ void login::set_fd(int fd){
 }
 
 void login::login_page(){
-
 	char temp;
 	cout<<"Welcome to SFS!"<<endl;
 	bool c = false;
 	while(!c){
-
 		this->password = "";
 		cout<<"Group/User:  [G/U]"<<endl;
 		cin>>temp;
@@ -30,10 +28,11 @@ void login::login_page(){
 		}else{
 			cout<<"Invalid input"<<endl;
 		}
-
 		write(this->fd, "0", 1);
 		if(c){
 			write(this->fd, "t", 1);
+			write(this->fd, str_length(this->id).c_str(), 3);
+			write(this->fd, this->id.c_str(), this->id.length());
 		}else{
 			write(this->fd, "f", 1);
 		}
@@ -149,6 +148,7 @@ bool login::user_sign_in(){
 
 	cout<<"Group: ";
 	cin>>group;
+	cin.ignore(10, '\n');
 	this->read_group();
 	if(!this->check_group(group)){
 		cout<<"Group not exist"<<endl;
@@ -157,7 +157,7 @@ bool login::user_sign_in(){
 	user u = {id,password,group};
 	this->user_set.push_back(u);
 	this->save_user_set();
-	return true;
+	return false;
 }
 
 string login::password_input(){
@@ -178,7 +178,7 @@ string login::password_input(){
 			putchar(' ');
 			putchar('\b');
 			count--;
-			password[count] = NULL;
+			password = password.substr(0, password.length() - 1);
 		}
 	}
 	cout<<endl;
@@ -189,7 +189,9 @@ bool login::check_user_name(string name){
 	this->password = "";
 	for(auto a:this->user_set){
 		if(!a.id.compare(name)){
+			this->id = a.id;
 			this->password = a.password;
+			this->group = a.group;
 			return true;
 		}
 	}
@@ -264,7 +266,7 @@ bool login::user_login(){
 	cin>>id;
 	cout<<"Password: ";
 	password = this->password_input();
-
+	cout<<password<<endl;
 	this->read_user_set();
 	if(!this->check_user_name(id) || password.compare(this->password)){
 		cout<<"Wrong password"<<endl;
