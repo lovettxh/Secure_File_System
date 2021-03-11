@@ -113,3 +113,59 @@ vector<string> get_directory::get_fileSet(){
 	}
 	return this->file_set;
 }	
+
+char get_directory::check_exist(string name){
+	if(split(name, "/").size() <= 2){
+		this->search_fileSet();
+		//vector<string> temp = this->get_fileSet();
+		vector<string> temp = this->file_set;
+		string n;
+		int s = 0;
+		for(auto a:temp){
+			if(a.substr(0,1).compare("/")){
+				n = a;
+				s = 0;
+			}else{
+				n = a.substr(1);
+				s = 1;
+			}
+			if(!name.compare(n)){
+				if(s){
+					return 'd';
+				}else{
+					return 'f';
+				}
+			}
+		}
+	}else{
+		string new_dir = name.substr(5);
+		string old_dir = this->current_dir;
+		vector<string> dir_set = split(new_dir, "/");
+		char t;
+		for(auto a:dir_set){
+			if((t = this->check_exist(a)) == 'n'){
+				this->current_dir = old_dir;
+				return 'n';
+			}
+			this->current_dir += ("/" + a);
+		}
+		this->current_dir = old_dir;
+		return t;
+	}
+	return 'n';
+}
+
+string get_directory::convert_dir(string dir){
+	string new_dir;
+	if(dir.length() >= 5 && !dir.substr(0,4).compare("home")){
+		new_dir = this->home_dir;
+		vector<string> temp = split(dir.substr(4), "/");
+		for(auto a:temp){
+			if(a.compare(""))
+				new_dir += ("/") + a;
+		}
+	}else{
+		new_dir = this->current_dir + "/" + dir;
+	}
+	return new_dir;
+}

@@ -48,7 +48,7 @@ string entering_page(int fd){
 		read(fd, &mode, 1);
 		cout<<mode<<endl;
 		if(mode == '1'){
-			file.open("g.txt", ios::in);
+			file.open("g.dat", ios::in);
 			while(getline(file, temp)){
 				write(fd, str_length(temp).c_str(), 3);
 				write(fd, temp.c_str(), temp.length());
@@ -57,7 +57,7 @@ string entering_page(int fd){
 			file.close();
 
 		}else if(mode == '2'){
-			file.open("g.txt", ios::out);
+			file.open("g.dat", ios::out);
 			s = 1;
 			while(s){
 				char g[1024] ={0};
@@ -72,7 +72,7 @@ string entering_page(int fd){
 			file.close();
 
 		}else if(mode == '3'){
-			file.open("l.txt", ios::in);
+			file.open("l.dat", ios::in);
 			while(getline(file, temp)){
 				write(fd, str_length(temp).c_str(), 3);
 				write(fd, temp.c_str(), temp.length());
@@ -81,7 +81,7 @@ string entering_page(int fd){
 			file.close();
 
 		}else if(mode == '4'){
-			file.open("l.txt", ios::out);
+			file.open("l.dat", ios::out);
 			s = 1;
 			while(s){
 				char g[1024] = {0};
@@ -156,6 +156,13 @@ int main(){
 	char buff[100];
 	getcwd(buff, 100);
 	get_directory dir(buff);
+
+	// while(1){
+	// 	cout<<dir.get_dir()<<"  $";
+	// 	cin>>u;
+	// 	cout<<dir.check_exist(u)<<endl;
+	// }
+
 	cmd_line c("");
 	
 	int fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);
@@ -164,7 +171,7 @@ int main(){
 	dir.set_user(u);
 	SFS_page(dir, c, fd);
 
-	// 
+	
 	// for(int i = 0; i < 100; i++){
 	// 	int fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);
 	// 	cout<<"Connected to client "<<fd<<endl;

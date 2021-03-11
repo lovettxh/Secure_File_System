@@ -17,5 +17,5 @@ private:
 	string cmd_input;
 	vector<string> cmd_set;
 	void delete_dir(get_directory* dir, string dir_name);
-	bool check_exist(get_directory* dir, string name);
+	void remove_slash();
 };

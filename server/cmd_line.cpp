@@ -79,14 +79,16 @@ void cmd_line::directory_cmd(get_directory* dir){
 				break;
 			}
 
-			if(!this->check_exist(dir, this->cmd_set[1])){
+			this->remove_slash();
+			char t = dir->check_exist(this->cmd_set[1]);
+			if(t == 'n'){
 				//cout<<"Directory not found"<<endl;
 				message = "Directory not found\n";
 				write(this->fd,"o",1);
 				write(this->fd, str_length(message).c_str(), str_length(message).length());
 				write(this->fd, message.c_str(), message.length());
 				break;
-			}else if((this->cmd_set[1][0])!='/'){
+			}else if(t == 'f'){
 				//cout<<"Target is not a directory"<<endl;
 				message = "Target is not a directory\n";
 				write(this->fd,"o",1);
@@ -94,7 +96,7 @@ void cmd_line::directory_cmd(get_directory* dir){
 				write(this->fd ,message.c_str(), message.length());
 				break;
 			}
-			new_dir = dir->get_dir() + this->cmd_set[1];
+			new_dir = dir->get_dir() + "/" + this->cmd_set[1];
 			dir->set_dir(new_dir);
 			break;
 		}
@@ -109,15 +111,17 @@ void cmd_line::directory_cmd(get_directory* dir){
 				write(this->fd, message.c_str(), message.length());
 				break;
 			}
-			if((this->cmd_set[1][0])!='/'){
+			this->remove_slash();
+			char t = dir->check_exist(this->cmd_set[1]);
+			if(t != 'n'){
 				//cout<<"Invalid Directory name"<<endl;
-				message ="Invalid Directory name\n";
+				message ="File already existed\n";
 				write(this->fd,"o",1);
 				write(this->fd, str_length(message).c_str(), str_length(message).length());
 				write(this->fd, message.c_str(), message.length());
 				break;
 			}
-			string dir_path = dir->get_dir() + this->cmd_set[1];
+			string dir_path = dir->get_dir() + "/" +this->cmd_set[1];
 			
 			if(opendir(dir_path.c_str())==NULL){
 				if(mkdir(dir_path.c_str(), 0777)){
@@ -154,7 +158,9 @@ void cmd_line::directory_cmd(get_directory* dir){
 				write(this->fd, message.c_str(), message.length());
 				break;
 			}
-			if(!this->check_exist(dir, this->cmd_set[1])){
+			this->remove_slash();
+			char t = dir->check_exist(this->cmd_set[1]);
+			if(t == 'n'){
 				//cout<<"File\\Directory not found"<<endl;
 				message = "File\\Directory not found\n";
 				write(this->fd,"o",1);
@@ -162,8 +168,8 @@ void cmd_line::directory_cmd(get_directory* dir){
 				write(this->fd, message.c_str(), message.length());
 				break;
 			}
-			if((this->cmd_set[1][0])=='/'){
-				this->delete_dir(dir, this->cmd_set[1]);
+			if(t == 'd'){
+				this->delete_dir(dir, "/"+this->cmd_set[1]);
 
 			}else{
 				new_path = dir->get_dir() + "/" + this->cmd_set[1];
@@ -198,7 +204,7 @@ void cmd_line::file_cmd(get_directory* dir){
 				break;
 			}
 			if(isdigit(this->cmd_set[1][0]) || isalpha(this->cmd_set[1][0])){
-				file_dir = dir->get_dir() + "/" + this->cmd_set[1];
+				file_dir = dir->convert_dir(this->cmd_set[1]);
 				ofstream file {file_dir};
 			}else{
 				//cout<<"Invalid file name"<<endl;
@@ -220,8 +226,10 @@ void cmd_line::file_cmd(get_directory* dir){
 				write(this->fd, message.c_str(), message.length());
 				break;
 			}
-			if(check_exist(dir, this->cmd_set[1])){
-				if(this->cmd_set[1][0]!='/'){
+			this->remove_slash();
+			char t = dir->check_exist(this->cmd_set[1]);
+			if(t != 'n'){
+				if(t == 'f'){
 					string file_dir = dir->get_dir() + "/" + this->cmd_set[1];
 					fstream file;
 					file.open(file_dir, ios::in);
@@ -266,7 +274,9 @@ void cmd_line::file_cmd(get_directory* dir){
 			string w = this->cmd_input.substr(start + 1, end-start-1);
 			w = string_handle(w);
 			string file_dir;
-			if(!this->check_exist(dir, this->cmd_set.back())){
+			this->remove_slash();
+			char t = dir->check_exist(this->cmd_set.back());
+			if(t == 'n'){
 				if(isdigit(this->cmd_set.back()[0]) || isalpha(this->cmd_set.back()[0])){
 					file_dir = dir->get_dir() + "/" + this->cmd_set.back();
 					ofstream file {file_dir};
@@ -287,30 +297,63 @@ void cmd_line::file_cmd(get_directory* dir){
 					write(this->fd, message.c_str(), message.length());
 					//cout<<"Invalid file name"<<endl;
 				}
-			}else{
-				file_dir = dir->get_dir() + "/" + this->cmd_set.back();
+			}else if(t == 'f'){
+				file_dir = dir->convert_dir(this->cmd_set.back());
 				ofstream file1;
 				file1.open(file_dir, ios::out | ios::app);
 				file1<<w;
 				file1.close();
+			}else{
+				message = "Target is a directory\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
 			}
 			break;
 		}
-	}
-}
 
+		case str2int("mv"):{
+			string message;
+			if(this->cmd_set.size() != 3){
+				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
+			this->remove_slash();
+			char t = dir->check_exist(this->cmd_set[1]);
+			if(t == 'n'){
+				message = "Invalid source address\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+			}
 
-
-bool cmd_line::check_exist(get_directory* dir, string name){
-	dir->search_fileSet();
-	vector<string> temp_fileSet = dir->get_fileSet();
-	for(const auto a:temp_fileSet){
-		if(!name.compare(a)){
-			return true;
+			string old_path = dir->convert_dir(this->cmd_set[1]);
+			string new_path = dir->convert_dir(this->cmd_set[2]);
+			int result = rename(old_path.c_str(), new_path.c_str());
+			if(result){
+				message = strerror(errno);
+				message += "\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+			}
 		}
 	}
-	return false;
 }
+
+void cmd_line::remove_slash(){
+	for(int i = 0; i < this->cmd_set.size(); i++){
+		if(this->cmd_set[i][0]=='/'){
+			this->cmd_set[i] = this->cmd_set[i].substr(1);
+		}
+	}
+	return;
+}
+
+
 
 void cmd_line::delete_dir(get_directory* dir, string dir_name){
 	string message;

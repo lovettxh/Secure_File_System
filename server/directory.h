@@ -13,6 +13,8 @@ public:
 	string get_dir();
 	string user_dir();
 	string get_home_dir();
+	char check_exist(string name);
+	string convert_dir(string dir);
 private:
 	string current_dir;
 	string home_dir;
