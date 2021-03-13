@@ -144,7 +144,7 @@ int main(){
 	
 	string u;
 	int a;
-	int socket_fd = server_init(5000, "127.0.0.1");
+	int socket_fd = server_init(5001, "127.0.0.1");
 
 	char buff[100];
 	getcwd(buff, 100);

@@ -64,7 +64,7 @@ int SFS_page(int socket_fd){
 }
 
 int main(){
-	int socket_fd = client_init(5000, "127.0.0.1");
+	int socket_fd = client_init(5001, "127.0.0.1");
 	login l;
 	int a;
 	l.set_fd(socket_fd);

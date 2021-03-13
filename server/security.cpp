@@ -15,6 +15,27 @@
 using namespace std;
 
 
+string dir_encrypt(string c) {
+	int key[] = {1,2,3,4,5,6,7}; 
+	string out = c;
+	int len = c.size();
+	for (int i = 0; i < len; i++) {
+		out[i] = out[i] ^ key[i % 7];
+	}
+	return out;
+}
+
+string dir_decode(string c) {
+	int key[] = {1,2,3,4,5,6,7}; 
+	string out = c;
+	int len = c.size();
+	for (int i = 0; i < len; i++) {
+		out[i] = out[i] ^ key[i % 7];
+	}
+	return out;
+}
+
+
 void integrity_save(get_directory* dir, string save_dir, string current_dir){
 	fstream save_file;
 	FILE* pfile;
@@ -52,7 +73,7 @@ void check_file_integrity(get_directory* dir, int fd){
 	fstream f;
 	string temp;
 	string message;
-	vector<string> data;
+	vector<string> data, temp_path;
 	FILE* pfile;
 	string old_dir = dir->get_dir();
 	string save_dir = dir->get_home_dir() + "/.integ/integ." + dir->get_user() + ".dat";
@@ -63,13 +84,18 @@ void check_file_integrity(get_directory* dir, int fd){
 		if((pfile = fopen(data[0].c_str(), "rb")) == NULL || bsdChecksum(pfile) != stoi(data[1])){
 		
 			temp = data[0].substr(dir->get_home_dir().length());
-			message = "File: /home" + dir_decode(temp) + " damaged\n";
+			temp_path = split(temp,"/");
+			message = "File: /home";
+			for(int i = 0; i < temp_path.size() - 1; i++){
+				if(temp_path[i].compare("")){
+					message += ("/" + temp_path[i]);
+				}
+			}
+			message += ("/" + dir_decode(temp_path.back()) + " is damaged\n");
 			write(fd,"o",1);
 			write(fd, str_length(message).c_str(), str_length(message).length());
 			write(fd, message.c_str(), message.length());
 			s = 0;
-		}else{
-			cout<<bsdChecksum(pfile)<<"  "<<stoi(data[1])<<endl;
 		}
 		fclose(pfile);
 	}
@@ -87,7 +113,7 @@ void save_file_integrity(get_directory* dir){
 	fstream f;
 	vector<string> file_set;
 	string old_dir = dir->get_dir();
-	string current_dir = dir->get_home_dir() + "/" + dir->get_user();
+	string current_dir = dir->get_home_dir() + "/.integ";
 	if(opendir(current_dir.c_str()) == NULL){
 		if(mkdir(current_dir.c_str(), 0777)){
 			cout<<"Error: "<<strerror(errno)<<endl;
@@ -97,33 +123,12 @@ void save_file_integrity(get_directory* dir){
 	string save_dir = dir->get_home_dir() + "/.integ/integ." + dir->get_user() + ".dat";
 	f.open(save_dir.c_str(), ios::out | ios::trunc);
 	f.close();
-	dir->set_dir(current_dir);
-	dir->search_fileSet();
-	file_set = dir->get_fileSet();
+	current_dir = dir->get_home_dir() + "/" + dir->get_user();
 	integrity_save(dir, save_dir, current_dir);
 	dir->set_dir(old_dir);
 
 }
 
-string dir_encrypt(string c) {
-	int key[] = {1,2,3,4,5,6,7}; 
-	string out = c;
-	int len = c.size();
-	for (int i = 0; i < len; i++) {
-		out[i] = out[i] ^ key[i % 7];
-	}
-	return out;
-}
-
-string dir_decode(string c) {
-	int key[] = {1,2,3,4,5,6,7}; 
-	string out = c;
-	int len = c.size();
-	for (int i = 0; i < len; i++) {
-		out[i] = out[i] ^ key[i % 7];
-	}
-	return out;
-}
 
 void file_encrypt(string file_path, string file_name ,string k){
 
@@ -268,7 +273,6 @@ void user_decrypt(get_directory* dir, string path){
 		rename((path + a).c_str(), (path + "/" + dir_decode(a.substr(1))).c_str());
 	}
 	for(auto a:file_set){
-		cout<<path<<"/"<<a<<" "<<dir->get_user()<<endl;
 		file_decrypt(path, a, dir->get_user());
 	}
 	dir->set_dir(old_dir);
