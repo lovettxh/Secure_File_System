@@ -8,6 +8,7 @@ public:
 	get_directory(string a);
 	void set_dir(string a);
 	void set_user(string name);
+	string get_user();
 	vector<string> get_fileSet();
 	void search_fileSet();
 	string get_dir();

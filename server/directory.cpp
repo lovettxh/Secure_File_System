@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include "utilities.h"
+
 #include "cmd_line.h"
 
 using namespace std;
@@ -47,6 +47,9 @@ void get_directory::set_user(string name){
 
 string get_directory::get_dir(){
 	return this->current_dir;
+}
+string get_directory::get_user(){
+	return this->user;
 }
 
 string get_directory::user_dir(){
@@ -117,8 +120,8 @@ vector<string> get_directory::get_fileSet(){
 char get_directory::check_exist(string name){
 	if(split(name, "/").size() <= 2){
 		this->search_fileSet();
-		//vector<string> temp = this->get_fileSet();
-		vector<string> temp = this->file_set;
+		vector<string> temp = this->get_fileSet();
+		// vector<string> temp = this->file_set;
 		string n;
 		int s = 0;
 		for(auto a:temp){

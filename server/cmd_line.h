@@ -3,6 +3,7 @@
 #include <string.h>
 #include <cstring>
 #include "directory.h"
+#include "utilities.h"
 using namespace std;
 
 class cmd_line{
@@ -11,6 +12,7 @@ public:
 	void set_input(string a);
 	void directory_cmd(get_directory* dir);
 	void file_cmd(get_directory* dir);
+	int exit_cmd(get_directory* dir);
 	cmd_line(string a);
 private:
 	int fd;

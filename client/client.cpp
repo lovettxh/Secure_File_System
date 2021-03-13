@@ -35,7 +35,7 @@ int client_init(int port, char* ip){
 	return socket_fd;
 }
 
-void SFS_page(int socket_fd){
+int SFS_page(int socket_fd){
 	char indicator;
 	int s = 0;
 	char l[3];
@@ -53,16 +53,27 @@ void SFS_page(int socket_fd){
 			getline(cin, input);
 			write(socket_fd, str_length(input).c_str(), 3);
 			write(socket_fd, input.c_str(), input.length());
+			if(!(split(input, " ")[0].compare("logout"))){
+				return 1;
+			}else if(!(split(input, " ")[0].compare("exit"))){
+				return 2;
+			}
 		}
 	}
+	return 0;
 }
 
 int main(){
 	int socket_fd = client_init(5000, "127.0.0.1");
 	login l;
+	int a;
 	l.set_fd(socket_fd);
-	l.login_page();
-	SFS_page(socket_fd);
-
+	while(1){
+		l.login_page();
+		a = SFS_page(socket_fd);
+		if(a == 2){
+			break;
+		}
+	}
 	return 0;
 }

@@ -13,6 +13,19 @@
 using namespace std;
 
 
+// https://en.wikipedia.org/wiki/BSD_checksum
+int bsdChecksum(FILE *fp) /* The file handle for input data */
+{
+    int checksum = 0;             /* The checksum mod 2^16. */
+
+    for (int ch = getc(fp); ch != EOF; ch = getc(fp)) {
+        checksum = (checksum >> 1) + ((checksum & 1) << 15);
+        checksum += ch;
+        checksum &= 0xffff;       /* Keep it within bounds. */
+    }
+    return checksum;
+}
+
 vector<string> split(string in, string delim){
 
     vector<string> res;
@@ -89,7 +102,7 @@ string str_length(string s){
 
 vector<string> get_group_member(string name){
     fstream file;
-    file.open("l.txt", ios::in);
+    file.open("l.dat", ios::in);
     string temp, group;
     vector<user> user_set;
     vector<string> user_info;

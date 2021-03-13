@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include "cmd_line.h"
-#include "utilities.h"
+
 
 using namespace std;
 
@@ -340,8 +340,24 @@ void cmd_line::file_cmd(get_directory* dir){
 				write(this->fd, str_length(message).c_str(), str_length(message).length());
 				write(this->fd, message.c_str(), message.length());
 			}
+			break;
 		}
 	}
+}
+
+int cmd_line::exit_cmd(get_directory* dir){
+	if(this->cmd_set.empty()){
+		return 0;
+	}
+	switch(str2int(this->cmd_set[0].c_str())){
+		case str2int("logout"):{
+			return 2;
+		}
+		case str2int("exit"):{
+			return 1;
+		}
+	}
+	return 0;
 }
 
 void cmd_line::remove_slash(){

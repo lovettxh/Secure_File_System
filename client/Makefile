@@ -1,5 +1,5 @@
 CC = g++
-LFLAGS = 
+LFLAGS = -lcrypto
 CFLAGS =-c -Wall -std=c++11 -O2
 OBJS = client.o utilities.o login.o
 EXE = client

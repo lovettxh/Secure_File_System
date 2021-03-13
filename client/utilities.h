@@ -13,3 +13,4 @@ string string_handle(string input);
 string string_replace(string input, string old_s, string new_s);
 int getch();
 string str_length(string s);
+char *str2md5(const char *str, int length);

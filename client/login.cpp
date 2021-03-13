@@ -134,7 +134,7 @@ bool login::user_page(){
 bool login::user_sign_in(){
 	cout<<"User name: ";
 	string id;
-	string password;
+	string p;
 	string group;
 	cin>>id;
 	this->read_user_set();
@@ -144,7 +144,10 @@ bool login::user_sign_in(){
 	}
 	
 	cout<<"Password: ";
-	password = this->password_input();
+	p = this->password_input();
+	char* o = str2md5(p.c_str(), p.length());
+	p = o;
+	delete[] o;
 
 	cout<<"Group: ";
 	cin>>group;
@@ -154,7 +157,7 @@ bool login::user_sign_in(){
 		cout<<"Group not exist"<<endl;
 		return false;
 	}
-	user u = {id,password,group};
+	user u = {id,p,group};
 	this->user_set.push_back(u);
 	this->save_user_set();
 	return false;
@@ -163,13 +166,13 @@ bool login::user_sign_in(){
 string login::password_input(){
 	cin.ignore(10, '\n');
 	char temp;
-	string password = "";
+	string p = "";
 	int count = 0;
 	while((temp = getch()) != 10){
 		if((temp >= 'a' && temp <= 'z') || (temp >= 'A' && temp <= 'Z') || (temp >= '0' && temp <= '9')){
 			count++;
 			putchar('*');
-			password += temp;
+			p += temp;
 		}else if(temp == 127){
 			if(count == 0){
 				continue;
@@ -178,11 +181,11 @@ string login::password_input(){
 			putchar(' ');
 			putchar('\b');
 			count--;
-			password = password.substr(0, password.length() - 1);
+			p = p.substr(0, p.length() - 1);
 		}
 	}
 	cout<<endl;
-	return password;
+	return p;
 }
 
 bool login::check_user_name(string name){
@@ -261,14 +264,16 @@ void login::save_user_set(){
 
 bool login::user_login(){
 	string id;
-	string password;
+	string p;
 	cout<<"User name: ";
 	cin>>id;
 	cout<<"Password: ";
-	password = this->password_input();
-	cout<<password<<endl;
+	p = this->password_input();
+	char* o = str2md5(p.c_str(), p.length());
+	p = o;
+	delete[] o;
 	this->read_user_set();
-	if(!this->check_user_name(id) || password.compare(this->password)){
+	if(!this->check_user_name(id) || p.compare(this->password)){
 		cout<<"Wrong password"<<endl;
 		return false;
 	}

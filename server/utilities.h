@@ -19,3 +19,4 @@ string string_replace(string input, string old_s, string new_s);
 int getch();
 string str_length(string s);
 vector<string> get_group_member(string name);
+int bsdChecksum(FILE *fp);

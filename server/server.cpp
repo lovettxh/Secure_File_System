@@ -9,8 +9,8 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "utilities.h"
-#include "cmd_line.h"
+
+#include "security.h"
 using namespace std;
 
 int server_init(int port, char* ip){
@@ -109,12 +109,13 @@ string entering_page(int fd){
 	return temp;
 }
 
-void SFS_page(get_directory dir, cmd_line c, int fd){
+int SFS_page(get_directory dir, cmd_line c, int fd){
 	string output;
 	string temp;
 	char l[3];
 	char input[1024];
 	int s = 0;
+	int a = 0;
 	while(1){
 		char input[1024] = {0};
 		output = dir.user_dir() + "$ ";
@@ -132,51 +133,49 @@ void SFS_page(get_directory dir, cmd_line c, int fd){
 		c.set_input(temp);
 		c.directory_cmd(&dir);
 		c.file_cmd(&dir);
-
-	}
-}
-
-void* server_echo(void* arg){
-	int fd = *(int*)(&arg);
-	if(fd == -1){
-		cout<<"accept error"<<endl;
-		exit(-1);
-	}
-	while(1){
-
+		a = c.exit_cmd(&dir);
+		if(a != 0){
+			return a;
+		}
 	}
 }
 
 int main(){
 	
 	string u;
-
+	int a;
 	int socket_fd = server_init(5000, "127.0.0.1");
 
 	char buff[100];
 	getcwd(buff, 100);
 	get_directory dir(buff);
-
-	// while(1){
-	// 	cout<<dir.get_dir()<<"  $";
-	// 	cin>>u;
-	// 	cout<<dir.check_exist(u)<<endl;
-	// }
+	string fp = dir.get_dir() + "/123";
 
 	cmd_line c("");
 	
 	int fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);
-	u = entering_page(fd);
-	c.set_fd(fd);
-	dir.set_user(u);
-	SFS_page(dir, c, fd);
+	while(1){
+		u = entering_page(fd);
+		c.set_fd(fd);
+		dir.set_user(u);
+		check_file_integrity(&dir, fd);
+		user_decrypt(&dir, (dir.get_home_dir() + "/" + dir.get_user()));
+		
+		a = SFS_page(dir, c, fd);
+		if(a == 1){
+			
+			user_encrypt(&dir, (dir.get_home_dir() + "/" + dir.get_user()));
+			save_file_integrity(&dir);
+			break;
+		}else if(a == 2){
+			
+			user_encrypt(&dir, (dir.get_home_dir() + "/" + dir.get_user()));
+			save_file_integrity(&dir);
+			//dir.set_user("");
+			dir.set_dir(dir.get_home_dir());
+		}
+	}
+	
 
 	
-	// for(int i = 0; i < 100; i++){
-	// 	int fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);
-	// 	cout<<"Connected to client "<<fd<<endl;
-	// 	pthread_create(&t[i],NULL,server,(void *)(long)fd);
-	// }
-	// login l;
-	// l.login_page();
 }
