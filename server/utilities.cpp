@@ -26,12 +26,11 @@ int bsdChecksum(FILE *fp) /* The file handle for input data */
     return checksum;
 }
 
+// This function can split a given string into a string vector given the delimiter
 vector<string> split(string in, string delim){
-
     vector<string> res;
     if(in == "")
         return res;
-
     string str = in + delim;
     size_t pos = str.find(delim);
 

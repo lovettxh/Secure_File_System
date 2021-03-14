@@ -13,8 +13,9 @@
 
 using namespace std;
 
+// client initialization
 int client_init(int port, char* ip){
-	int socket_fd = socket(AF_INET, SOCK_STREAM,0);
+	int socket_fd = socket(AF_INET, SOCK_STREAM,0);		// setting up socket
 	if(socket_fd == -1)
 	{
 		cout<<"socket failed"<<endl;
@@ -22,10 +23,9 @@ int client_init(int port, char* ip){
 	}
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	addr.sin_addr.s_addr = inet_addr(ip);
-
-	int res = connect(socket_fd,(struct sockaddr*)&addr,sizeof(addr));
+	addr.sin_port = htons(port);						// setting up port number
+	addr.sin_addr.s_addr = inet_addr(ip);				// setting up ip address
+	int res = connect(socket_fd,(struct sockaddr*)&addr,sizeof(addr));	// bind to socket
 	if(res == -1)
 	{
 		cout<<"bind failed"<<endl;
@@ -35,6 +35,8 @@ int client_init(int port, char* ip){
 	return socket_fd;
 }
 
+// client side SFS page handling function
+// receive signal 'i' or 'o' from server to perform simple input or output to user
 int SFS_page(int socket_fd){
 	char indicator;
 	int s = 0;
@@ -44,12 +46,12 @@ int SFS_page(int socket_fd){
 	while(1){
 		read(socket_fd, &indicator, 1);
 		char output[1024] = {0};
-		if(indicator == 'o'){
+		if(indicator == 'o'){				// when client receives 'o', it means server needs it to output something
 			read(socket_fd, l, 3);
 			s = atoi(l);
 			read(socket_fd, output, s);
 			cout<<output;
-		}else if(indicator == 'i'){
+		}else if(indicator == 'i'){			// when client receives 'i', it means server needs user input
 			getline(cin, input);
 			write(socket_fd, str_length(input).c_str(), 3);
 			write(socket_fd, input.c_str(), input.length());

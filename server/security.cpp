@@ -14,7 +14,7 @@
 
 using namespace std;
 
-
+// string encrypt function
 string dir_encrypt(string c) {
 	int key[] = {1,2,3,4,5,6,7}; 
 	string out = c;
@@ -25,6 +25,7 @@ string dir_encrypt(string c) {
 	return out;
 }
 
+// string decrypt function
 string dir_decode(string c) {
 	int key[] = {1,2,3,4,5,6,7}; 
 	string out = c;
@@ -35,7 +36,7 @@ string dir_decode(string c) {
 	return out;
 }
 
-
+// calculate a file's bsdChecksum and save it for integrity check
 void integrity_save(get_directory* dir, string save_dir, string current_dir){
 	fstream save_file;
 	FILE* pfile;
@@ -69,6 +70,8 @@ void integrity_save(get_directory* dir, string save_dir, string current_dir){
 	}
 }
 
+// check every file's bsdChecksum under user directory to 
+// find out whether a file has been changed 
 void check_file_integrity(get_directory* dir, int fd){
 	fstream f;
 	string temp;
@@ -109,6 +112,7 @@ void check_file_integrity(get_directory* dir, int fd){
 	return;
 }
 
+// save every file's bsdChecksum value under user directory for integrity check
 void save_file_integrity(get_directory* dir){
 	fstream f;
 	vector<string> file_set;
@@ -129,7 +133,7 @@ void save_file_integrity(get_directory* dir){
 
 }
 
-
+// encrypt the file given its name, output file name and key
 void file_encrypt(string file_path, string file_name ,string k){
 
 	unsigned char key[EVP_MAX_KEY_LENGTH], in[1024], out[1024];
@@ -178,6 +182,7 @@ void file_encrypt(string file_path, string file_name ,string k){
 	return;
 }
 
+// decrypt the file given its name, output file name and key
 void file_decrypt(string file_path, string file_name, string k){
 
 	unsigned char key[EVP_MAX_KEY_LENGTH], in[1024], out[1024 + EVP_MAX_KEY_LENGTH];
@@ -199,7 +204,6 @@ void file_decrypt(string file_path, string file_name, string k){
 		cout<<"EVP_DecryptInit Error"<<endl;
 		return;
 	}
-
 	string out_file = dir_decode(file_name);
 	string outp = file_path + "/" + out_file;
 	if((fout = fopen(outp.c_str(), "wb")) == NULL){
@@ -228,6 +232,7 @@ void file_decrypt(string file_path, string file_name, string k){
 	return;
 }
 
+// encrypt all the file content, file name and directory name under user directory
 void user_encrypt(get_directory* dir, string path){
 	string old_dir = dir->get_dir();
 	dir->set_dir(path);
@@ -253,6 +258,7 @@ void user_encrypt(get_directory* dir, string path){
 	dir->set_dir(old_dir);
 }
 
+// decrypt all the file content, file name and directory name under user directory
 void user_decrypt(get_directory* dir, string path){
 	string old_dir = dir->get_dir();
 	dir->set_dir(path);

@@ -18,7 +18,7 @@
 
 using namespace std;
 
-
+// constructor to set up current directory and home directory
 get_directory::get_directory(string a){
 	this->current_dir = a + "/file";
 	this->home_dir = a + "/file";
@@ -30,10 +30,12 @@ get_directory::get_directory(string a){
 	}
 }
 
+// set new current directory
 void get_directory::set_dir(string a){
 	this->current_dir = a;
 }
 
+// set user ID for identification
 void get_directory::set_user(string name){
 	this->user = name;
 	string dir = this->home_dir+"/"+name;
@@ -52,6 +54,7 @@ string get_directory::get_user(){
 	return this->user;
 }
 
+// hide the real directory to user and only show /home 
 string get_directory::user_dir(){
 	int l = this->home_dir.length();
 	string t = this->current_dir.substr(l);
@@ -63,6 +66,7 @@ string get_directory::get_home_dir(){
 	return this->home_dir;
 }
 
+// search all the content under current directory and save it into a vector file_set
 void get_directory::search_fileSet(){
 	this->file_set.clear();
 	struct stat statBuffer;
@@ -99,7 +103,8 @@ void get_directory::search_fileSet(){
 		closedir(dp);
 	}
 }
-
+// return the searched file_set
+// It will only contain the file and directory that the user is allowed to view
 vector<string> get_directory::get_fileSet(){
 	if(!this->current_dir.compare(this->home_dir)){
 		vector<string> new_file_set;
@@ -117,11 +122,11 @@ vector<string> get_directory::get_fileSet(){
 	return this->file_set;
 }	
 
+// check the given address, return whether it is a file, folder or not existed
 char get_directory::check_exist(string name){
 	if(split(name, "/").size() <= 2){
 		this->search_fileSet();
 		vector<string> temp = this->get_fileSet();
-		// vector<string> temp = this->file_set;
 		string n;
 		int s = 0;
 		for(auto a:temp){

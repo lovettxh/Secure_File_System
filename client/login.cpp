@@ -8,28 +8,28 @@
 #include "utilities.h"
 using namespace std;
 
-
+// setting up socket_fd for communication with server
 void login::set_fd(int fd){
 	this->fd = fd;
 }
 
+// client side entering page
 void login::login_page(){
 	char temp;
 	cout<<"Welcome to SFS!"<<endl;
 	bool c = false;
 	while(!c){
 		this->password = "";
-		cout<<"Group/User:  [G/U]"<<endl;
+		cout<<"Group/User:  [G/U]"<<endl;		// choose for group or user operation
 		cin>>temp;
 		if(temp == 'G' || temp == 'g'){
 			this->group_page();
 		}else if(temp == 'U' || temp == 'u'){
-			c = this->user_page();
+			c = this->user_page();			
 		}else{
 			cout<<"Invalid input"<<endl;
 		}
-		write(this->fd, "0", 1);
-		if(c){
+		if(c){									// c == true indicate login success
 			write(this->fd, "t", 1);
 			write(this->fd, str_length(this->id).c_str(), 3);
 			write(this->fd, this->id.c_str(), this->id.length());
@@ -39,10 +39,11 @@ void login::login_page(){
 	}
 }
 
+// group operation page
 void login::group_page(){
 	char temp;
 	string group_name;
-	cout<<"Create group/View group:  [C/V]"<<endl;
+	cout<<"Create group/View group:  [C/V]"<<endl;		// select view existing group or create new group
 	cin>>temp;
 	if(temp == 'C' || temp == 'c'){
 		cout<<"Please enter group name: ";
@@ -63,20 +64,13 @@ void login::group_page(){
 	}
 }
 
+// request group info from server side and store it
 void login::read_group(){
 	char l[3];
 	char g[1024];
 	int s = 1;
-
 	string group_name;
 	this->group_set.clear();
-	// string group_name;
-	// fstream file;
-	// file.open("g.txt",ios::in);
-	// while(getline(file, group_name)){
-	// 	this->group_set.push_back(group_name);
-	// }
-	// file.close();
 	write(this->fd, "1", 1);
 	while(s){
 		char g[1024] = {0};
@@ -90,14 +84,9 @@ void login::read_group(){
 	}
 }
 
+// send updated group info to server side to save it into files
 void login::save_group(){
-	// fstream file;
-	// file.open("g.txt",ios::out);
-	// for(auto a:this->group_set)
-	// 	file<<a<<endl;
-	// file.close();
 	string temp;
-
 	write(this->fd, "2", 1);
 	for(auto a:this->group_set){
 		temp = str_length(a);
@@ -107,6 +96,7 @@ void login::save_group(){
 	write(this->fd, "000", 3);
 }
 
+// check whether a group name is already existed
 bool login::check_group(string name){
 	for(auto a:this->group_set){
 		if(!name.compare(a)){
@@ -116,6 +106,7 @@ bool login::check_group(string name){
 	return false;
 }
 
+// user operation page
 bool login::user_page(){
 	char temp;
 	cout<<"Sign in/Login:  [S/L]"<<endl;
@@ -131,24 +122,23 @@ bool login::user_page(){
 	return false;
 }
 
+// user sign in page
 bool login::user_sign_in(){
 	cout<<"User name: ";
 	string id;
 	string p;
 	string group;
-	cin>>id;
+	cin>>id;					// entering user id
 	this->read_user_set();
 	if(this->check_user_name(id)){
 		cout<<"User name exist"<<endl;
 		return false;
 	}
-	
 	cout<<"Password: ";
-	p = this->password_input();
-	char* o = str2md5(p.c_str(), p.length());
+	p = this->password_input();	// entering user password
+	char* o = str2md5(p.c_str(), p.length());	// use MD5 to hash the password and then store it
 	p = o;
 	delete[] o;
-
 	cout<<"Group: ";
 	cin>>group;
 	cin.ignore(10, '\n');
@@ -163,6 +153,7 @@ bool login::user_sign_in(){
 	return false;
 }
 
+// secure password input function
 string login::password_input(){
 	cin.ignore(10, '\n');
 	char temp;
@@ -187,7 +178,7 @@ string login::password_input(){
 	cout<<endl;
 	return p;
 }
-
+// check whether a user ID is already existed
 bool login::check_user_name(string name){
 	this->password = "";
 	for(auto a:this->user_set){
@@ -200,13 +191,12 @@ bool login::check_user_name(string name){
 	}
 	return false;
 }
-
+// request user info from server side and store it
 void login::read_user_set(){
 	char l[3];
 	char u[1024];
 	vector<string> user_info;
 	string temp;
-
 	int s = 1;
 	user t;
 	this->user_set.clear();
@@ -222,23 +212,10 @@ void login::read_user_set(){
 			t = {user_info[0], user_info[1], user_info[2]};
 			this->user_set.push_back(t);
 		}
-
 	}
-	// fstream file;
-	// file.open("l.txt", ios::in);
-	// string temp;
-	// user u;
-	// vector<string> user_info;
-	// this->user_set.clear();
-	// while(getline(file, temp)){
-	// 	user_info = split(temp, " ");
-	// 	u = {user_info[0], user_info[1], user_info[2]};
-	// 	this->user_set.push_back(u);
-	// }
-	// file.close();
-
 }
 
+// send the updated user info to the server to save it into files
 void login::save_user_set(){
 	string temp;
 
@@ -249,19 +226,9 @@ void login::save_user_set(){
 		write(this->fd, temp.c_str(), temp.length());
 	}
 	write(this->fd, "000", 3);
-	// fstream file;
-	// file.open("l.txt", ios::out);
-	// string temp;
-
-	// for(auto a:this->user_set){
-
-	// 	temp = a.id + " " + a.password + " " + a.group;
-
-	// 	file<<temp<<endl;
-	// }
-	// file.close();
 }
 
+// user login page
 bool login::user_login(){
 	string id;
 	string p;
