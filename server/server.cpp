@@ -103,6 +103,8 @@ string entering_page(int fd){
 		// mode 't' stands for 'true' that indicates authentication is complete
 		}else if(mode == 't'){
 			break;
+		}else if(mode == 'e'){
+			return "\00";
 		}
 	}
 	char out[1024] = {0};
@@ -147,11 +149,15 @@ int SFS_page(get_directory dir, cmd_line c, int fd){
 	}
 }
 
-int main(){
-	
+int main(int argc, char* argv[]){
+	if(argc != 3){
+		cout<<"Invalid command"<<endl;
+		cout<<"should be: ./server (ip address) (port number)"<<endl;
+		exit(1);
+	}
 	string u;
 	int a;
-	int socket_fd = server_init(5001, "127.0.0.1");		// initialize server
+	int socket_fd = server_init(atoi(argv[2]), argv[1]);		// initialize server
 	char buff[100];
 	getcwd(buff, 100);									// get current directory
 	get_directory dir(buff);							// get_directory class is used for searching all the containing given the directory
@@ -159,6 +165,11 @@ int main(){
 	int fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);	//waiting for client
 	while(1){
 		u = entering_page(fd);						// login page
+		if(!u.compare("\00")){
+			cout<<"waiting for client"<<endl;
+			fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);
+			continue;
+		}
 		c.set_fd(fd);
 		dir.set_user(u);							// setup user name
 		check_file_integrity(&dir, fd);				// check file integrity
@@ -168,7 +179,10 @@ int main(){
 		if(a == 1){									// a == 1 for exit
 			user_encrypt(&dir, (dir.get_home_dir() + "/" + dir.get_user()));
 			save_file_integrity(&dir);
-			break;
+			dir.set_dir(dir.get_home_dir());
+			cout<<"waiting for client"<<endl;
+			fd = accept(socket_fd,(struct sockaddr*)NULL,NULL);
+			continue;
 		}else if(a == 2){							// a == 2 for logout
 			user_encrypt(&dir, (dir.get_home_dir() + "/" + dir.get_user()));
 			save_file_integrity(&dir);

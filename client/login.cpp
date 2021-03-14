@@ -16,16 +16,22 @@ void login::set_fd(int fd){
 // client side entering page
 void login::login_page(){
 	char temp;
-	cout<<"Welcome to SFS!"<<endl;
+	cout<<"      Welcome to SFS!"<<endl;
+	cout<<"---------------------------"<<endl;
 	bool c = false;
 	while(!c){
 		this->password = "";
-		cout<<"Group/User:  [G/U]"<<endl;		// choose for group or user operation
+		cout<<"    Group/User:  [G/U]"<<endl;		// choose for group or user operation
+		cout<<"    To exit, press[E]"<<endl;
 		cin>>temp;
 		if(temp == 'G' || temp == 'g'){
 			this->group_page();
 		}else if(temp == 'U' || temp == 'u'){
 			c = this->user_page();			
+		}else if(temp == 'E' || temp == 'e')
+		{
+			write(this->fd, "e", 1);
+			exit(1);
 		}else{
 			cout<<"Invalid input"<<endl;
 		}

@@ -65,8 +65,13 @@ int SFS_page(int socket_fd){
 	return 0;
 }
 
-int main(){
-	int socket_fd = client_init(5001, "127.0.0.1");
+int main(int argc, char* argv[]){
+	if(argc != 3){
+		cout<<"Invalid command"<<endl;
+		cout<<"should be: ./server (ip address) (port number)"<<endl;
+		exit(1);
+	}
+	int socket_fd = client_init(atoi(argv[2]), argv[1]);
 	login l;
 	int a;
 	l.set_fd(socket_fd);
