@@ -109,6 +109,14 @@ void cmd_line::directory_cmd(get_directory* dir){
 				write(this->fd, message.c_str(), message.length());
 				break;
 			}
+			string user_dir = dir->get_home_dir() + "/" + dir->get_user();
+			if(dir->get_dir().substr(0,user_dir.length()).compare(user_dir)){
+				message = "Permission denied\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
 			this->remove_slash();
 			char t = dir->check_exist(this->cmd_set[1]);
 			if(t != 'n'){
@@ -148,6 +156,14 @@ void cmd_line::directory_cmd(get_directory* dir){
 			string message;
 			if(this->cmd_set.size() != 2){
 				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
+			string user_dir = dir->get_home_dir() + "/" + dir->get_user();
+			if(dir->get_dir().substr(0,user_dir.length()).compare(user_dir)){
+				message = "Permission denied\n";
 				write(this->fd,"o",1);
 				write(this->fd, str_length(message).c_str(), str_length(message).length());
 				write(this->fd, message.c_str(), message.length());
@@ -196,6 +212,14 @@ void cmd_line::file_cmd(get_directory* dir){
 				write(this->fd, message.c_str(), message.length());
 				break;
 			}
+			string user_dir = dir->get_home_dir() + "/" + dir->get_user();
+			if(dir->get_dir().substr(0,user_dir.length()).compare(user_dir)){
+				message = "Permission denied\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
 			if(isdigit(this->cmd_set[1][0]) || isalpha(this->cmd_set[1][0])){
 				file_dir = dir->convert_dir(this->cmd_set[1]);
 				ofstream file {file_dir};
@@ -212,6 +236,14 @@ void cmd_line::file_cmd(get_directory* dir){
 			string message;
 			if(this->cmd_set.size() != 2){
 				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
+			string user_dir = dir->get_home_dir() + "/" + dir->get_user();
+			if(dir->get_dir().substr(0,user_dir.length()).compare(user_dir)){
+				message = "Permission denied\n";
 				write(this->fd,"o",1);
 				write(this->fd, str_length(message).c_str(), str_length(message).length());
 				write(this->fd, message.c_str(), message.length());
@@ -253,6 +285,14 @@ void cmd_line::file_cmd(get_directory* dir){
 			string message;
 			if(this->cmd_set.size() < 3){
 				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
+			string user_dir = dir->get_home_dir() + "/" + dir->get_user();
+			if(dir->get_dir().substr(0,user_dir.length()).compare(user_dir)){
+				message = "Permission denied\n";
 				write(this->fd,"o",1);
 				write(this->fd, str_length(message).c_str(), str_length(message).length());
 				write(this->fd, message.c_str(), message.length());
@@ -303,6 +343,14 @@ void cmd_line::file_cmd(get_directory* dir){
 			string message;
 			if(this->cmd_set.size() != 3){
 				message = "Invalid command\n";
+				write(this->fd,"o",1);
+				write(this->fd, str_length(message).c_str(), str_length(message).length());
+				write(this->fd, message.c_str(), message.length());
+				break;
+			}
+			string user_dir = dir->get_home_dir() + "/" + dir->get_user();
+			if(dir->get_dir().substr(0,user_dir.length()).compare(user_dir)){
+				message = "Permission denied\n";
 				write(this->fd,"o",1);
 				write(this->fd, str_length(message).c_str(), str_length(message).length());
 				write(this->fd, message.c_str(), message.length());

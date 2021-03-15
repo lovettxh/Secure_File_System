@@ -22,7 +22,7 @@ private:
 	void save_group();
 	bool check_group(string name);
 	bool user_page();
-	bool user_sign_in();
+	bool user_sign_up();
 	
 	bool check_user_name(string name);
 	void read_user_set();

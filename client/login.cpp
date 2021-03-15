@@ -115,10 +115,10 @@ bool login::check_group(string name){
 // user operation page
 bool login::user_page(){
 	char temp;
-	cout<<"Sign in/Login:  [S/L]"<<endl;
+	cout<<"Sign up/Login:  [S/L]"<<endl;
 	cin>>temp;
 	if(temp == 'S' || temp == 's'){
-		return this->user_sign_in();
+		return this->user_sign_up();
 
 	}else if(temp == 'L' || temp == 'l'){
 		return this->user_login();
@@ -129,7 +129,7 @@ bool login::user_page(){
 }
 
 // user sign in page
-bool login::user_sign_in(){
+bool login::user_sign_up(){
 	cout<<"User name: ";
 	string id;
 	string p;
